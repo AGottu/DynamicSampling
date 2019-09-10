@@ -108,6 +108,7 @@ class BertDropReader(DatasetReader):
     
     @overrides
     def _read(self, file_path: str):
+        numInstances = 0
         instances = []
         dataset_numbers = dict()
         datasets = []
@@ -183,13 +184,18 @@ class BertDropReader(DatasetReader):
                                                         answer_annotations,
                                                         dataset)
                     if instance is not None:
-                        instances.append(instance)
+                        numInstances += 1
+                        if self.lazy:
+                            yield instance
+                        else:
+                            instances.append(instance)
                         dataset_numbers[dataset] = dataset_numbers.get(dataset, 0) + 1
-                        if len(instances) % 5000 == 0:
-                            print('i: ', len(instances))
+                        if numInstances % 5000 == 0:
+                            print('i: ', numInstances)
                             print('Dataset Numbers: ', dataset_numbers)
 
-        return instances
+        if not self.lazy:
+            return instances
         
     @overrides
     def text_to_instance(self, 
