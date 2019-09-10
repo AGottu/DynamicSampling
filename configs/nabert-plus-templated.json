@@ -11,7 +11,7 @@
                 "pretrained_model": "bert-base-uncased"
             }
         },
-        "allowed_datasets": "squad2"
+        "allowed_datasets": "all"
     },
     "iterator": {
         "type": "basic",
@@ -27,7 +27,7 @@
     "trainer": {
         "cuda_device": 0,
         "keep_serialized_model_every_num_seconds": 3600,
-        "num_serialized_models_to_keep": 5,
+        "num_serialized_models_to_keep": 8,
         "num_epochs": 20,
         "optimizer": {
             "type": "bert_adam",
