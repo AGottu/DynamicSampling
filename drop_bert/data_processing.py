@@ -108,6 +108,7 @@ class BertDropReader(DatasetReader):
     
     @overrides
     def _read(self, file_path: str):
+        instances = []
         datasets = []
         cnt = 0
         for root, dirs, files in os.walk(file_path):
@@ -185,12 +186,15 @@ class BertDropReader(DatasetReader):
                                                          answer_annotations,
                                                          dataset)
                         if instance is not None:
-                            yield instance
+                            instances.append(instance)
+                            #yield instance
 
                 else:
                     # No more lines to be read from file
 
                     is_done[ind] = True
+                    
+        return instances
 
     @overrides
     def text_to_instance(self, 
