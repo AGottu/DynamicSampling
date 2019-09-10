@@ -60,7 +60,7 @@ class BertDropReader(DatasetReader):
     def __init__(self,
                  tokenizer: Tokenizer = None,
                  token_indexers: Dict[str, TokenIndexer] = None,
-                 lazy: bool = True,
+                 lazy: bool = False,
                  max_pieces: int = 512,
                  max_count: int = 10,
                  max_spans: int = 10,
