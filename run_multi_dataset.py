@@ -1,3 +1,4 @@
+import os
 import json
 import shutil
 import sys
@@ -8,8 +9,8 @@ from allennlp.commands import main
 # Use overrides to train on CPU.
 overrides = json.dumps({"dataset_reader": {"allowed_datasets": "squad2"}, "trainer": {"cuda_device": [0,1,2,3] if cuda.is_available() else -1, "num_epochs": 20}})
 
-config_file = '/mnt/c/Users/super/Documents/UCI/Bert-n-Pals-master/configs/nabert-plus-templated.json'
-serialization_dir = '/mnt/c/Users/super/Documents/UCI/Bert-n-Pals-master/pals'
+config_file = '%s/configs/nabert-plus-templated.json' % os.getcwd()
+serialization_dir = '%s/pals' % os.getcwd()
 
 # Training will fail if the serialization directory already
 # has stuff in it. If you are running the same training loop
