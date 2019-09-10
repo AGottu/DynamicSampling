@@ -1,5 +1,5 @@
 #!/bin/sh
 pip install gdown
-python download_files.py
-unzip -o data/all_datasets.zip -d data
-python run_multi_dataset.py
+python $PWD/download_files.py
+unzip -o $PWD/data/all_datasets.zip -d $PWD/data
+python $PWD/run_multi_dataset.py
