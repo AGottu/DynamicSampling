@@ -1,3 +1,4 @@
+import os
 from typing import Any, Dict, List, Optional
 import logging
 
@@ -45,9 +46,9 @@ class NumericallyAugmentedBERT(Model):
         self.number_rep = number_rep
 
         #'''#### Ananth ####
-        pals_config = BertConfig.from_json_file('configs/pals_config.json')
+        pals_config = BertConfig.from_json_file('%s/configs/pals_config.json' % os.getcwd())
         self.BERT = BERTModel(pals_config)
-        partial = torch.load('bert/pytorch_model.bin', map_location='cpu')
+        partial = torch.load('%s/bert/pytorch_model.bin' % os.getcwd(), map_location='cpu')
         model_dict = self.BERT.state_dict()
         update = {}
         for n, p in model_dict.items():
