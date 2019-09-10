@@ -392,8 +392,8 @@ class NumericallyAugmentedBERT(Model):
                     output_dict["answer"].append(answer_json)
                     answer_annotations = metadata[i].get('answer_annotations', [])
                     
-                    print(answer_annotations)
-                    print(answer_json)
+                    #print('Actual Answer: ', answer_annotations)
+                    #print('Predicted Answer: ', answer_json)
                     if answer_annotations:
                        self._drop_metrics(answer_json["value"], answer_annotations)
 
