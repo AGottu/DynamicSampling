@@ -109,6 +109,7 @@ class BertDropReader(DatasetReader):
     @overrides
     def _read(self, file_path: str):
         instances = []
+        dataset_numbers = dict()
         datasets = []
         cnt = 0
         for root, dirs, files in os.walk(file_path):
@@ -121,81 +122,75 @@ class BertDropReader(DatasetReader):
                                  'num_of_questions': 0})
                 cnt += 1
 
-        is_done = [False for _ in datasets]
-        while not all(is_done):
-            for ind, dataset in enumerate(datasets):
-                if not self.allowed_datasets == 'all':
-                    dataset_list = self.allowed_datasets.split(',')
-                    if not dataset['domain'] in dataset_list:
-                        continue
-                if is_done[ind]:
+        for ind, dataset in enumerate(datasets):
+            if not self.allowed_datasets == 'all':
+                dataset_list = self.allowed_datasets.split(',')
+                if not dataset['domain'] in dataset_list:
                     continue
 
-                for passage_info in dataset['file_handle']:
-                    passage_info = json.loads(passage_info)
-                    passage_text = passage_info["passage"].strip()
+            for passage_info in dataset['file_handle']:
+                passage_info = json.loads(passage_info)
+                passage_text = passage_info["passage"].strip()
 
-                    if self.wordpiece_numbers:
-                        word_tokens = split_tokens_by_hyphen(self.number_tokenizer.tokenize(passage_text))
-                    else:
-                        word_tokens = self.tokenizer.tokenize(passage_text)
-                    numbers_in_passage = []
-                    number_indices = []
-                    number_words = []
-                    number_len = []
-                    passage_tokens = []
-                    curr_index = 0
-                    # Get all passage numbers
-                    for token in word_tokens:
-                        number = self.word_to_num(token.text, True)
-                        wordpieces = self.tokenizer.tokenize(token.text)
-                        num_wordpieces = len(wordpieces)
-                        if number is not None:
-                            numbers_in_passage.append(number)
-                            number_indices.append(curr_index)
-                            number_words.append(token.text)
-                            number_len.append(num_wordpieces)
-                        passage_tokens += wordpieces
-                        curr_index += num_wordpieces
-
-                    # Process questions from this passage
-                    for question_answer in passage_info["qa_pairs"]:
-                        question_id = question_answer["query_id"]
-                        question_text = question_answer["question"].strip()
-                        if question_answer["answer"] != "impossible":
-                            spans = question_answer["answer"]["spans"]
-                            spans = [span.strip() for span in spans if span.strip()]
-                            question_answer["answer"]["spans"] = spans
-                            dataset = question_answer["dataset"]
-
-                            answer_annotations = []
-                            if "answer" in question_answer:
-                                answer_annotations.append(question_answer["answer"])
-                            if self.use_validated and "validated_answers" in question_answer:
-                                answer_annotations += question_answer["validated_answers"]
-                        else:
-                            answer_annotations = None
-                        instance = self.text_to_instance(question_text,
-                                                         passage_text,
-                                                         passage_tokens,
-                                                         numbers_in_passage,
-                                                         number_words,
-                                                         number_indices,
-                                                         number_len,
-                                                         question_id,
-                                                         answer_annotations,
-                                                         dataset)
-                        if instance is not None:
-                            instances.append(instance)
-                            #yield instance
-
+                if self.wordpiece_numbers:
+                    word_tokens = split_tokens_by_hyphen(self.number_tokenizer.tokenize(passage_text))
                 else:
-                    # No more lines to be read from file
+                    word_tokens = self.tokenizer.tokenize(passage_text)
+                numbers_in_passage = []
+                number_indices = []
+                number_words = []
+                number_len = []
+                passage_tokens = []
+                curr_index = 0
+                # Get all passage numbers
+                for token in word_tokens:
+                    number = self.word_to_num(token.text, True)
+                    wordpieces = self.tokenizer.tokenize(token.text)
+                    num_wordpieces = len(wordpieces)
+                    if number is not None:
+                        numbers_in_passage.append(number)
+                        number_indices.append(curr_index)
+                        number_words.append(token.text)
+                        number_len.append(num_wordpieces)
+                    passage_tokens += wordpieces
+                    curr_index += num_wordpieces
 
-                    is_done[ind] = True
-                    
+                # Process questions from this passage
+                for question_answer in passage_info["qa_pairs"]:
+                    question_id = question_answer["query_id"]
+                    question_text = question_answer["question"].strip()
+                    if question_answer["answer"] != "impossible":
+                        spans = question_answer["answer"]["spans"]
+                        spans = [span.strip() for span in spans if span.strip()]
+                        question_answer["answer"]["spans"] = spans
+                        dataset = question_answer["dataset"]
+
+                        answer_annotations = []
+                        if "answer" in question_answer:
+                            answer_annotations.append(question_answer["answer"])
+                        if self.use_validated and "validated_answers" in question_answer:
+                            answer_annotations += question_answer["validated_answers"]
+                    else:
+                        answer_annotations = None
+                    instance = self.text_to_instance(question_text,
+                                                        passage_text,
+                                                        passage_tokens,
+                                                        numbers_in_passage,
+                                                        number_words,
+                                                        number_indices,
+                                                        number_len,
+                                                        question_id,
+                                                        answer_annotations,
+                                                        dataset)
+                    if instance is not None:
+                        instances.append(instance)
+                        dataset_numbers[dataset] = dataset_numbers.get(dataset, 0) + 1
+                        if len(instances) % 5000 == 0:
+                            print('i: ', len(instances))
+                            print('Dataset Numbers: ', dataset_numbers)
+
         return instances
-
+        
     @overrides
     def text_to_instance(self, 
                          question_text: str, 
