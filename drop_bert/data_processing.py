@@ -124,6 +124,7 @@ class BertDropReader(DatasetReader):
                 cnt += 1
 
         for ind, dataset in enumerate(datasets):
+            currentDataset = dataset['domain']
             if not self.allowed_datasets == 'all':
                 dataset_list = self.allowed_datasets.split(',')
                 if not dataset['domain'] in dataset_list:
@@ -164,7 +165,7 @@ class BertDropReader(DatasetReader):
                         spans = question_answer["answer"]["spans"]
                         spans = [span.strip() for span in spans if span.strip()]
                         question_answer["answer"]["spans"] = spans
-                        dataset = question_answer["dataset"]
+                        dataset = question_answer.get("dataset", currentDataset)
 
                         answer_annotations = []
                         if "answer" in question_answer:
