@@ -16,6 +16,7 @@ import pickle
 from drop_bert.nhelpers import tokenlist_to_passage, beam_search, evaluate_postfix
 from drop_bert.modeling import BertConfig, BERTModel
 
+NO_ANSWER_THRESHOLD = 210.0
 logger = logging.getLogger(__name__)
 
 @Model.register("augmented_bert")
@@ -40,7 +41,7 @@ class NumericallyAugmentedBERT(Model):
 
         if answering_abilities is None:
             self.answering_abilities = ["passage_span_extraction", "question_span_extraction",
-                                        "arithmetic", "counting", "answer_exists"]
+                                        "arithmetic", "counting"]#, "answer_exists"]
         else:
             self.answering_abilities = answering_abilities
         self.number_rep = number_rep
@@ -363,8 +364,21 @@ class NumericallyAugmentedBERT(Model):
                     # We did not consider multi-mention answers here
                     if predicted_ability_str == "passage_span_extraction":
                         answer_json["answer_type"] = "passage_span"
-                        answer_json["value"], answer_json["spans"] = \
-                            self._span_prediction(question_passage_tokens[i], best_passage_span[i])
+
+                        ###### Ananth ######
+                        best_start_end = best_passage_span[i]
+                        start_probs = passage_span_start_log_probs[i]
+                        end_probs = passage_span_end_log_probs[i]
+                        best_passage_span_score = start_probs[best_start_end[0]] + end_probs[best_start_end[1]]
+                        null_score = start_probs[0] + end_probs[0] # BERT Paper: "We treat questions w/no answer as having start/end at [CLS] token"
+                        if best_passage_span_score < null_score + NO_ANSWER_THRESHOLD: # Predict no-answer if model isn't confident enough
+                            #assert impossible_answer[i] == 1
+                            answer_json["value"] = "impossible"
+                        else:
+                            #assert impossible_answer[i] == 0
+                        ###### Ananth ######
+                            answer_json["value"], answer_json["spans"] = \
+                                self._span_prediction(question_passage_tokens[i], best_passage_span[i])
                     elif predicted_ability_str == "question_span_extraction":
                         answer_json["answer_type"] = "question_span"
                         answer_json["value"], answer_json["spans"] = \
