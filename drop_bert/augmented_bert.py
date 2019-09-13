@@ -16,7 +16,7 @@ import pickle
 from drop_bert.nhelpers import tokenlist_to_passage, beam_search, evaluate_postfix
 from drop_bert.modeling import BertConfig, BERTModel
 
-NO_ANSWER_THRESHOLD = 210.0
+NO_ANSWER_THRESHOLD = 207.0
 logger = logging.getLogger(__name__)
 
 @Model.register("augmented_bert")
@@ -41,7 +41,7 @@ class NumericallyAugmentedBERT(Model):
 
         if answering_abilities is None:
             self.answering_abilities = ["passage_span_extraction", "question_span_extraction",
-                                        "arithmetic", "counting"]#, "answer_exists"]
+                                        "arithmetic", "counting", "answer_exists"]
         else:
             self.answering_abilities = answering_abilities
         self.number_rep = number_rep
