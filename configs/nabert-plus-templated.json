@@ -28,7 +28,7 @@
         "cuda_device": 0,
         "keep_serialized_model_every_num_seconds": 3600,
         "num_serialized_models_to_keep": 8,
-        "num_epochs": 20,
+        "num_epochs": 10,
         "optimizer": {
             "type": "bert_adam",
             "lr": 1e-05
