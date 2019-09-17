@@ -7,7 +7,8 @@ from torch import cuda
 from allennlp.commands import main
 
 # Use overrides to train on CPU.
-overrides = json.dumps({"dataset_reader": {"lazy": True, "allowed_datasets": sys.argv[1]}, "trainer": {"cuda_device": 0 if cuda.is_available() else -1, "num_epochs": 10}})
+instancesPerEpoch = 50000 if sys.argv[1] == 'all-sample' else None
+overrides = json.dumps({"dataset_reader": {"lazy": True, "allowed_datasets": sys.argv[1], "instances_per_epoch": instancesPerEpoch}, "iterator": {"instances_per_epoch": instancesPerEpoch}, "trainer": {"cuda_device": 0 if cuda.is_available() else -1, "num_epochs": 10}})
 
 config_file = '%s/configs/nabert-plus-templated.json' % os.getcwd()
 serialization_dir = '%s/pals' % os.getcwd() if len(sys.argv) < 3 else sys.argv[2]
