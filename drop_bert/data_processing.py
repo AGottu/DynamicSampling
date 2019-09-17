@@ -210,6 +210,7 @@ class BertDropReader(DatasetReader):
             for dataset in datasets:
                 if not self.allowed_datasets in ('all', 'all-sample'):
                     dataset_list = self.allowed_datasets.split(',')
+                    assert dataset_list[0] in ('drop', 'duorc', 'narrativeqa', 'newsqa', 'quoref', 'ropes', 'squad', 'squad2')
                     if not dataset['domain'] in dataset_list:
                         continue
                 curr_iterator = self.dataset_iterator(dataset['file_handle'], dataset['domain'])
