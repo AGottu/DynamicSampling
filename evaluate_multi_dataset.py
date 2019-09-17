@@ -20,6 +20,7 @@ sys.argv = [
     archive_file,
     input_file,
     "--output-file", output_file,
+    "--cuda-device", 0,
     "--include-package", "drop_bert",
     "-o", overrides
 ]
