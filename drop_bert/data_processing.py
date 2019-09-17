@@ -60,7 +60,7 @@ class BertDropReader(DatasetReader):
     def __init__(self,
                  tokenizer: Tokenizer = None,
                  token_indexers: Dict[str, TokenIndexer] = None,
-                 lazy: bool = False,
+                 lazy: bool = True,
                  max_pieces: int = 512,
                  max_count: int = 10,
                  max_spans: int = 10,
@@ -73,7 +73,8 @@ class BertDropReader(DatasetReader):
                  exp_search: str = 'add_sub',
                  max_depth: int = 3,
                  extra_numbers: List[float] = [],
-                 allowed_datasets: str = 'all'):
+                 allowed_datasets: str = 'all',
+                 instances_per_epoch: int = 70000):
         super(BertDropReader, self).__init__(lazy)
         self.tokenizer = tokenizer
         self.token_indexers = token_indexers
@@ -89,6 +90,7 @@ class BertDropReader(DatasetReader):
         self.max_depth = max_depth
         self.extra_numbers = extra_numbers
         self.allowed_datasets = allowed_datasets
+        self.instances_per_epoch = instances_per_epoch
         self.op_dict = {'+': operator.add, '-': operator.sub, '*': operator.mul, '/': operator.truediv}
         self.operations = list(enumerate(self.op_dict.keys()))
         self.templates = [lambda x,y,z: (x + y) * z,
@@ -105,14 +107,77 @@ class BertDropReader(DatasetReader):
             self.word_to_num = get_number_from_word
         else:
             self.word_to_num = DropReaderOrg.convert_word_to_number
+
+    def dataset_iterator(self, jsonl, dataset):
+        for passage_info in jsonl:#dataset['file_handle']:
+            passage_info = json.loads(passage_info)
+            passage_text = passage_info["passage"].strip()
+
+            if self.wordpiece_numbers:
+                word_tokens = split_tokens_by_hyphen(self.number_tokenizer.tokenize(passage_text))
+            else:
+                word_tokens = self.tokenizer.tokenize(passage_text)
+            numbers_in_passage = []
+            number_indices = []
+            number_words = []
+            number_len = []
+            passage_tokens = []
+            curr_index = 0
+            # Get all passage numbers
+            for token in word_tokens:
+                number = self.word_to_num(token.text, True)
+                wordpieces = self.tokenizer.tokenize(token.text)
+                num_wordpieces = len(wordpieces)
+                if number is not None:
+                    numbers_in_passage.append(number)
+                    number_indices.append(curr_index)
+                    number_words.append(token.text)
+                    number_len.append(num_wordpieces)
+                passage_tokens += wordpieces
+                curr_index += num_wordpieces
+
+            # Process questions from this passage
+            for question_answer in passage_info["qa_pairs"]:
+                question_id = question_answer["query_id"]
+                question_text = question_answer["question"].strip()
+                if question_answer["answer"] != "impossible":
+                    spans = question_answer["answer"]["spans"]
+                    spans = [span.strip() for span in spans if span.strip()]
+                    question_answer["answer"]["spans"] = spans
+                    #dataset = question_answer.get("dataset", currentDataset)
+
+                    answer_annotations = []
+                    if "answer" in question_answer:
+                        answer_annotations.append(question_answer["answer"])
+                    if self.use_validated and "validated_answers" in question_answer:
+                        answer_annotations += question_answer["validated_answers"]
+                else:
+                    answer_annotations = None
+                instance = self.text_to_instance(question_text,
+                                                    passage_text,
+                                                    passage_tokens,
+                                                    numbers_in_passage,
+                                                    number_words,
+                                                    number_indices,
+                                                    number_len,
+                                                    question_id,
+                                                    answer_annotations,
+                                                    dataset)
+                if instance is not None:
+                    self.numInstances += 1
+                    self.dataset_numbers[dataset] = self.dataset_numbers.get(dataset, 0) + 1
+                    if self.numInstances % 5000 == 0:
+                        print('i: ', self.numInstances)
+                        print('Dataset Numbers: ', self.dataset_numbers)
+                    yield instance
     
     @overrides
     def _read(self, file_path: str):
-        numInstances = 0
-        instances = []
-        dataset_numbers = dict()
+        self.numInstances = 0
+        self.dataset_numbers = dict()
         datasets = []
         cnt = 0
+        trainDev = ''
         for root, dirs, files in os.walk(file_path):
             for file_name in files:
                 single_file_path_cached = cached_path(root+"/"+file_name)
@@ -122,81 +187,34 @@ class BertDropReader(DatasetReader):
                                  'domain': file_name.split(".")[1],
                                  'num_of_questions': 0})
                 cnt += 1
+                trainDev = file_name.split(".")[0]
 
-        for ind, dataset in enumerate(datasets):
-            currentDataset = dataset['domain']
-            if not self.allowed_datasets == 'all':
-                dataset_list = self.allowed_datasets.split(',')
-                if not dataset['domain'] in dataset_list:
-                    continue
-
-            for passage_info in dataset['file_handle']:
-                passage_info = json.loads(passage_info)
-                passage_text = passage_info["passage"].strip()
-
-                if self.wordpiece_numbers:
-                    word_tokens = split_tokens_by_hyphen(self.number_tokenizer.tokenize(passage_text))
-                else:
-                    word_tokens = self.tokenizer.tokenize(passage_text)
-                numbers_in_passage = []
-                number_indices = []
-                number_words = []
-                number_len = []
-                passage_tokens = []
-                curr_index = 0
-                # Get all passage numbers
-                for token in word_tokens:
-                    number = self.word_to_num(token.text, True)
-                    wordpieces = self.tokenizer.tokenize(token.text)
-                    num_wordpieces = len(wordpieces)
-                    if number is not None:
-                        numbers_in_passage.append(number)
-                        number_indices.append(curr_index)
-                        number_words.append(token.text)
-                        number_len.append(num_wordpieces)
-                    passage_tokens += wordpieces
-                    curr_index += num_wordpieces
-
-                # Process questions from this passage
-                for question_answer in passage_info["qa_pairs"]:
-                    question_id = question_answer["query_id"]
-                    question_text = question_answer["question"].strip()
-                    if question_answer["answer"] != "impossible":
-                        spans = question_answer["answer"]["spans"]
-                        spans = [span.strip() for span in spans if span.strip()]
-                        question_answer["answer"]["spans"] = spans
-                        dataset = question_answer.get("dataset", currentDataset)
-
-                        answer_annotations = []
-                        if "answer" in question_answer:
-                            answer_annotations.append(question_answer["answer"])
-                        if self.use_validated and "validated_answers" in question_answer:
-                            answer_annotations += question_answer["validated_answers"]
-                    else:
-                        answer_annotations = None
-                    instance = self.text_to_instance(question_text,
-                                                        passage_text,
-                                                        passage_tokens,
-                                                        numbers_in_passage,
-                                                        number_words,
-                                                        number_indices,
-                                                        number_len,
-                                                        question_id,
-                                                        answer_annotations,
-                                                        dataset)
-                    if instance is not None:
-                        numInstances += 1
-                        if self.lazy:
-                            yield instance
-                        else:
-                            instances.append(instance)
-                        dataset_numbers[dataset] = dataset_numbers.get(dataset, 0) + 1
-                        if numInstances % 5000 == 0:
-                            print('i: ', numInstances)
-                            print('Dataset Numbers: ', dataset_numbers)
-
-        if not self.lazy:
-            return instances
+        if self.allowed_datasets == 'all-sample' and trainDev == 'train':
+            datasetIterators = []
+            sample_probs = []
+            numEpochs = 5 # 5 epochs for fineTuning
+            datasetSizes = {'drop': 77394, 'newsqa': 92543, 'squad2': 130310, 'quoref': 19392, 'ropes': 10302, 'narrativeqa': 32717, 'squad': 87596, 'duorc': 54746} # Approximate
+            for dataset in datasets:
+                assert dataset['domain'] in ('drop', 'duorc', 'narrativeqa', 'newsqa', 'quoref', 'ropes', 'squad', 'squad2')
+                datasetIterators.append(self.dataset_iterator(dataset['file_handle'], dataset['domain']))
+                sample_probs.append(datasetSizes[dataset['domain']])
+            alpha = 0.5 # Square root sampling
+            sample_probs = [p**alpha for p in sample_probs]
+            tot = sum(sample_probs)
+            sample_probs = [p/tot for p in sample_probs]
+            for epoch in range(numEpochs):
+                for step in range(self.instances_per_epoch):
+                    datasetIndex = np.random.choice(8, p=sample_probs)
+                    yield next(datasetIterators[datasetIndex])
+        else:
+            for dataset in datasets:
+                if not self.allowed_datasets in ('all', 'all-sample'):
+                    dataset_list = self.allowed_datasets.split(',')
+                    if not dataset['domain'] in dataset_list:
+                        continue
+                curr_iterator = self.dataset_iterator(dataset['file_handle'], dataset['domain'])
+                for instance in curr_iterator:
+                    yield instance
         
     @overrides
     def text_to_instance(self, 
