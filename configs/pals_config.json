@@ -13,6 +13,6 @@
   "num_hidden_layers": 12,
   "type_vocab_size": 2,
   "vocab_size": 30522,
-  "num_tasks": 8,
+  "num_tasks": 1,
   "num_task_layers": 1
 }
