@@ -16,6 +16,7 @@ import pickle
 from drop_bert.nhelpers import tokenlist_to_passage, beam_search, evaluate_postfix
 from drop_bert.modeling import BertConfig, BERTModel
 
+PALS = False
 NO_ANSWER_THRESHOLD = 207.0
 logger = logging.getLogger(__name__)
 
@@ -46,25 +47,24 @@ class NumericallyAugmentedBERT(Model):
             self.answering_abilities = answering_abilities
         self.number_rep = number_rep
 
-        #'''#### Ananth ####
-        pals_config = BertConfig.from_json_file('%s/configs/pals_config.json' % os.getcwd())
-        self.BERT = BERTModel(pals_config)
-        partial = torch.load('%s/bert/pytorch_model.bin' % os.getcwd(), map_location='cpu')
-        model_dict = self.BERT.state_dict()
-        update = {}
-        for n, p in model_dict.items():
-            if 'aug' in n or 'mult' in n:
-                update[n] = p
-                if 'pooler.mult' in n and 'bias' in n:
-                    update[n] = partial['pooler.dense.bias']
-                if 'pooler.mult' in n and 'weight' in n:
-                    update[n] = partial['pooler.dense.weight']
-            else:
-                update[n] = partial[n]
-        self.BERT.load_state_dict(update)
-        #'''#### Ananth ####
-        
-        #self.BERT = BertModel.from_pretrained(bert_pretrained_model)
+        if PALS:
+            pals_config = BertConfig.from_json_file('%s/configs/pals_config.json' % os.getcwd())
+            self.BERT = BERTModel(pals_config)
+            partial = torch.load('%s/bert/pytorch_model.bin' % os.getcwd(), map_location='cpu')
+            model_dict = self.BERT.state_dict()
+            update = {}
+            for n, p in model_dict.items():
+                if 'aug' in n or 'mult' in n:
+                    update[n] = p
+                    if 'pooler.mult' in n and 'bias' in n:
+                        update[n] = partial['pooler.dense.bias']
+                    if 'pooler.mult' in n and 'weight' in n:
+                        update[n] = partial['pooler.dense.weight']
+                else:
+                    update[n] = partial[n]
+            self.BERT.load_state_dict(update)
+        else:
+            self.BERT = BertModel.from_pretrained(bert_pretrained_model)
         self.tokenizer = BertTokenizer.from_pretrained(bert_pretrained_model)
         bert_dim = self.BERT.pooler.dense.out_features
         
