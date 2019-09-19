@@ -6,6 +6,7 @@ import numpy as np
 import operator
 from collections import defaultdict
 from functools import reduce
+from itertools import cycle
 import os
 
 from allennlp.common.file_utils import cached_path
@@ -74,7 +75,8 @@ class BertDropReader(DatasetReader):
                  max_depth: int = 3,
                  extra_numbers: List[float] = [],
                  allowed_datasets: str = 'all',
-                 instances_per_epoch: int = 70000):
+                 instances_per_epoch: int = 70000,
+                 numEpochs: int = 5):
         super(BertDropReader, self).__init__(lazy)
         self.tokenizer = tokenizer
         self.token_indexers = token_indexers
@@ -91,6 +93,7 @@ class BertDropReader(DatasetReader):
         self.extra_numbers = extra_numbers
         self.allowed_datasets = allowed_datasets
         self.instances_per_epoch = instances_per_epoch
+        self.numEpochs = numEpochs
         self.op_dict = {'+': operator.add, '-': operator.sub, '*': operator.mul, '/': operator.truediv}
         self.operations = list(enumerate(self.op_dict.keys()))
         self.templates = [lambda x,y,z: (x + y) * z,
@@ -192,17 +195,16 @@ class BertDropReader(DatasetReader):
         if self.allowed_datasets == 'all-sample' and trainDev == 'train':
             datasetIterators = []
             sample_probs = []
-            numEpochs = 5 # 5 epochs for fineTuning
             datasetSizes = {'drop': 77394, 'newsqa': 92543, 'squad2': 130310, 'quoref': 19392, 'ropes': 10302, 'narrativeqa': 32717, 'squad': 87596, 'duorc': 54746} # Approximate
             for dataset in datasets:
                 assert dataset['domain'] in ('drop', 'duorc', 'narrativeqa', 'newsqa', 'quoref', 'ropes', 'squad', 'squad2')
-                datasetIterators.append(self.dataset_iterator(dataset['file_handle'], dataset['domain']))
+                datasetIterators.append(cycle(self.dataset_iterator(dataset['file_handle'], dataset['domain'])))
                 sample_probs.append(datasetSizes[dataset['domain']])
             alpha = 0.5 # Square root sampling
             sample_probs = [p**alpha for p in sample_probs]
             tot = sum(sample_probs)
             sample_probs = [p/tot for p in sample_probs]
-            for epoch in range(numEpochs):
+            for epoch in range(self.numEpochs):
                 for step in range(self.instances_per_epoch):
                     datasetIndex = np.random.choice(8, p=sample_probs)
                     yield next(datasetIterators[datasetIndex])
