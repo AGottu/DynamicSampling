@@ -209,15 +209,29 @@ class BertDropReader(DatasetReader):
                     datasetIndex = np.random.choice(8, p=sample_probs)
                     yield next(datasetIterators[datasetIndex])
         else:
-            for dataset in datasets:
-                if not self.allowed_datasets in ('all', 'all-sample'):
-                    dataset_list = self.allowed_datasets.split(',')
-                    assert dataset_list[0] in ('drop', 'duorc', 'narrativeqa', 'newsqa', 'quoref', 'ropes', 'squad', 'squad2')
-                    if not dataset['domain'] in dataset_list:
-                        continue
-                curr_iterator = self.dataset_iterator(dataset['file_handle'], dataset['domain'])
+            dataset_list = self.allowed_datasets.split(',')
+            assert dataset_list[0] in ('drop', 'duorc', 'narrativeqa', 'newsqa', 'quoref', 'ropes', 'squad', 'squad2')
+            datasetIterators = [self.dataset_iterator(dataset['file_handle'], dataset['domain']) for dataset in datasets if dataset['domain'] in dataset_list]
+            if len(datasetIterators) == 1:
+                assert len(dataset_list) == 1
+                curr_iterator = datasetIterators[0]
                 for instance in curr_iterator:
                     yield instance
+            else:
+                assert len(dataset_list) > 1
+                alternatingInstances = 5000 # Number of instances before switching to next dataset
+                finished = [False for x in datasetIterators]
+                i = -1
+                while not all(finished):
+                    i += 1
+                    iteratorIndex = (i // alternatingInstances) % len(datasetIterators)
+                    if not finished[iteratorIndex]:
+                        curr_iterator = datasetIterators[iteratorIndex]
+                        try:
+                            instance = next(curr_iterator)
+                            yield instance
+                        except StopIteration:
+                            finished[iteratorIndex] = True
         
     @overrides
     def text_to_instance(self, 
