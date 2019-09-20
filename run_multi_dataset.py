@@ -6,6 +6,7 @@ from torch import cuda
 
 from allennlp.commands import main
 
+assert len(sys.argv) == 3
 # Use overrides to train on CPU.
 instancesPerEpoch = 50000 if sys.argv[1] == 'all-sample' else None
 numEpochs = 10
