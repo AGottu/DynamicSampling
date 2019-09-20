@@ -210,15 +210,16 @@ class BertDropReader(DatasetReader):
                     yield next(datasetIterators[datasetIndex])
         else:
             dataset_list = self.allowed_datasets.split(',')
-            assert dataset_list[0] in ('drop', 'duorc', 'narrativeqa', 'newsqa', 'quoref', 'ropes', 'squad', 'squad2')
-            datasetIterators = [self.dataset_iterator(dataset['file_handle'], dataset['domain']) for dataset in datasets if dataset['domain'] in dataset_list]
+            assert dataset_list[0] in ('drop', 'duorc', 'narrativeqa', 'newsqa', 'quoref', 'ropes', 'squad', 'squad2') or self.allowed_datasets in ('all', 'all-sample')
+            if self.allowed_datasets in ('all', 'all-sample'):
+                datasetIterators = [self.dataset_iterator(dataset['file_handle'], dataset['domain']) for dataset in datasets]
+            else:
+                datasetIterators = [self.dataset_iterator(dataset['file_handle'], dataset['domain']) for dataset in datasets if dataset['domain'] in dataset_list]
             if len(datasetIterators) == 1:
-                assert len(dataset_list) == 1
                 curr_iterator = datasetIterators[0]
                 for instance in curr_iterator:
                     yield instance
             else:
-                assert len(dataset_list) > 1
                 alternatingInstances = 5000 # Number of instances before switching to next dataset
                 finished = [False for x in datasetIterators]
                 i = -1
