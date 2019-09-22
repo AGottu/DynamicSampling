@@ -16,7 +16,7 @@ import pickle
 from drop_bert.nhelpers import tokenlist_to_passage, beam_search, evaluate_postfix
 from drop_bert.modeling import BertConfig, BERTModel
 
-PALS = True
+PALS = False
 NO_ANSWER_THRESHOLD = 207.0
 logger = logging.getLogger(__name__)
 
