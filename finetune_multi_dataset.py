@@ -7,7 +7,7 @@ from torch import cuda
 from allennlp.commands import main
 
 # Use overrides to train on CPU.
-instancesPerEpoch = 50000
+instancesPerEpoch = 50000 if sys.argv[1] == 'all-sample' else None
 overrides = json.dumps({"dataset_reader": {"lazy": True, "allowed_datasets": sys.argv[1], "instances_per_epoch": instancesPerEpoch}, "iterator": {"instances_per_epoch": instancesPerEpoch}, "trainer": {"cuda_device": 0 if cuda.is_available() else -1, "num_epochs": 5}})
 
 model_archive = '%s/pals/model.tar.gz' % os.getcwd() if len(sys.argv) < 3 else sys.argv[2]
