@@ -173,6 +173,7 @@ class BertDropReader(DatasetReader):
                         print('i: ', self.numInstances)
                         print('Dataset Numbers: ', self.dataset_numbers)
                     yield instance
+        print('Dataset Numbers after finishing %s: ' % dataset, self.dataset_numbers)
     
     @overrides
     def _read(self, file_path: str):
@@ -181,6 +182,7 @@ class BertDropReader(DatasetReader):
         datasets = []
         cnt = 0
         trainDev = ''
+        datasetSizes = {'drop': 77394, 'newsqa': 92543, 'squad2': 130310, 'quoref': 19392, 'ropes': 10302, 'narrativeqa': 32717, 'squad': 87596, 'duorc': 54746} # Approximate
         for root, dirs, files in os.walk(file_path):
             for file_name in files:
                 single_file_path_cached = cached_path(root+"/"+file_name)
@@ -191,11 +193,11 @@ class BertDropReader(DatasetReader):
                                  'num_of_questions': 0})
                 cnt += 1
                 trainDev = file_name.split(".")[0]
-
+                
+        assert trainDev in ('train', 'dev')
         if self.allowed_datasets == 'all-sample' and trainDev == 'train':
             datasetIterators = []
             sample_probs = []
-            datasetSizes = {'drop': 77394, 'newsqa': 92543, 'squad2': 130310, 'quoref': 19392, 'ropes': 10302, 'narrativeqa': 32717, 'squad': 87596, 'duorc': 54746} # Approximate
             for dataset in datasets:
                 assert dataset['domain'] in ('drop', 'duorc', 'narrativeqa', 'newsqa', 'quoref', 'ropes', 'squad', 'squad2')
                 datasetIterators.append(cycle(self.dataset_iterator(dataset['file_handle'], dataset['domain'])))
