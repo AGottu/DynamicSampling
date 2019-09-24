@@ -227,7 +227,7 @@ class BertDropReader(DatasetReader):
                 alternatingInstances = 1000#5000 # Number of instances before switching to next dataset
                 finished = [False for x in datasetIterators]
                 i = -1
-                while not any(finished):#all(finished):
+                while not all(finished):
                     i += 1
                     iteratorIndex = (i // alternatingInstances) % len(datasetIterators)
                     if not finished[iteratorIndex]:
