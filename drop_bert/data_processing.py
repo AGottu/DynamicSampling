@@ -200,7 +200,7 @@ class BertDropReader(DatasetReader):
             sample_probs = []
             for dataset in datasets:
                 assert dataset['domain'] in ('drop', 'duorc', 'narrativeqa', 'newsqa', 'quoref', 'ropes', 'squad', 'squad2')
-                if dataset['domain'] in ('duorc', 'squad'):
+                if not dataset['domain'] in ('drop', 'squad2'):
                     continue
                 datasetIterators.append(cycle(self.dataset_iterator(dataset['file_handle'], dataset['domain'])))
                 sample_probs.append(datasetSizes[dataset['domain']])
@@ -210,7 +210,7 @@ class BertDropReader(DatasetReader):
             sample_probs = [p/tot for p in sample_probs]
             for epoch in range(self.numEpochs):
                 for step in range(self.instances_per_epoch):
-                    datasetIndex = np.random.choice(8, p=sample_probs)
+                    datasetIndex = np.random.choice(len(sample_probs), p=sample_probs)
                     yield next(datasetIterators[datasetIndex])
         else:
             dataset_list = self.allowed_datasets.split(',')
