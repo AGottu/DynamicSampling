@@ -200,6 +200,8 @@ class BertDropReader(DatasetReader):
             sample_probs = []
             for dataset in datasets:
                 assert dataset['domain'] in ('drop', 'duorc', 'narrativeqa', 'newsqa', 'quoref', 'ropes', 'squad', 'squad2')
+                if dataset['domain'] in ('duorc', 'squad'):
+                    continue
                 datasetIterators.append(cycle(self.dataset_iterator(dataset['file_handle'], dataset['domain'])))
                 sample_probs.append(datasetSizes[dataset['domain']])
             alpha = 0.5 # Square root sampling
