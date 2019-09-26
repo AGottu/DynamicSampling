@@ -212,6 +212,11 @@ class BertDropReader(DatasetReader):
                 for step in range(self.instances_per_epoch):
                     datasetIndex = np.random.choice(len(sample_probs), p=sample_probs)
                     yield next(datasetIterators[datasetIndex])
+        elif self.allowed_datasets == 'all' and trainDev == 'train':
+            for dataset in datasets:
+                curr_iterator = self.dataset_iterator(dataset['file_handle'], dataset['domain'])
+                for instance in curr_iterator:
+                    yield instance
         else:
             dataset_list = self.allowed_datasets.split(',')
             assert dataset_list[0] in ('drop', 'duorc', 'narrativeqa', 'newsqa', 'quoref', 'ropes', 'squad', 'squad2') or self.allowed_datasets in ('all', 'all-sample')
