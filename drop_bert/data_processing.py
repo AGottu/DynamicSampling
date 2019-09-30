@@ -1,4 +1,4 @@
-import json
+allimport json
 from overrides import overrides
 from tqdm import tqdm
 from typing import Dict, List, Union, Tuple, Any
@@ -200,7 +200,7 @@ class BertDropReader(DatasetReader):
             sample_probs = []
             for dataset in datasets:
                 assert dataset['domain'] in ('drop', 'duorc', 'narrativeqa', 'newsqa', 'quoref', 'ropes', 'squad', 'squad2')
-                if not dataset['domain'] in ('drop', 'squad2'):
+                if not dataset['domain'] in ('drop', 'squad2', 'newsqa'):
                     continue
                 datasetIterators.append(cycle(self.dataset_iterator(dataset['file_handle'], dataset['domain'])))
                 sample_probs.append(datasetSizes[dataset['domain']])
