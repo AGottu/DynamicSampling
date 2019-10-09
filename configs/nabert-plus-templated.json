@@ -15,12 +15,55 @@
     },
     "iterator": {
         "type": "basic",
-        "batch_size": 4
+        "batch_size": 6
     },
     "model": {
         "type": "nabert",
-        "bert_pretrained_model": "bert-base-uncased",
-        "dropout_prob": 0.1
+        "initializer": [],
+        "text_field_embedder": {
+            "allow_unmatched_keys": true,
+            "embedder_to_indexer_map": {
+                "tokens": ["tokens", "tokens-type-ids"]
+            },
+            "token_embedders": {
+                "tokens": {
+                    "type": "bert-embedder",
+                    "bert_config_path": {
+                        "attention_probs_dropout_prob": 0.1,
+                        "hidden_act": "gelu",
+                        "hidden_dropout_prob": 0.1,
+                        "hidden_size": 768,
+                        "initializer_range": 0.02,
+                        "intermediate_size": 3072,
+                        "max_position_embeddings": 512,
+                        "num_attention_heads": 12,
+                        "num_hidden_layers": 12,
+                        "type_vocab_size": 2,
+                        "vocab_size": 30522,
+                        "layer_norm_eps": 1e-12,
+                        "pal_dim_size": 200
+                    }
+                }
+            }
+        },
+        "encoder": {
+            "type": "bert_encoder_pal",
+            "config": {
+                  "attention_probs_dropout_prob": 0.1,
+                  "hidden_act": "gelu",
+                  "hidden_dropout_prob": 0.1,
+                  "hidden_size": 768,
+                  "initializer_range": 0.02,
+                  "intermediate_size": 3072,
+                  "max_position_embeddings": 512,
+                  "num_attention_heads": 12,
+                  "num_hidden_layers": 12,
+                  "type_vocab_size": 2,
+                  "vocab_size": 30522,
+                  "layer_norm_eps": 1e-12,
+                  "pal_dim_size": 200
+              }
+        }
     },
     "train_data_path": "data/all_datasets/train",
     "validation_data_path": "data/all_datasets/dev",
