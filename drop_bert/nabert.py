@@ -14,7 +14,7 @@ from allennlp.modules import Seq2SeqEncoder, TextFieldEmbedder
 from pytorch_pretrained_bert.modeling import BertConfig, BertModel
 from allennlp.modules.scalar_mix import ScalarMix
 
-from reading_comprehension.data.nhelpers import tokenlist_to_passage, beam_search, evaluate_postfix
+from drop_bert.nhelpers import tokenlist_to_passage, beam_search, evaluate_postfix
 
 logger = logging.getLogger(__name__)
 
