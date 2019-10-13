@@ -49,6 +49,7 @@ class DynamicIterator(BasicIterator):
 
     def chooseDataset(self, datasetName: str):
         self.dataset_choice = datasetName
+        print('Dataset Chosen: %s' % datasetName.upper())
 
     def dynamic_iterator(self, losses):
         i = 0
@@ -109,5 +110,6 @@ class DynamicIterator(BasicIterator):
             new_instances = self.dynamic_iterator(losses)
         else:
             new_instances = self.full_iterator()
+        new_instances = list(new_instances)
         ### Ananth ###
         yield from super().__call__(new_instances, num_epochs, shuffle)
