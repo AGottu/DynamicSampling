@@ -102,6 +102,10 @@ class DynamicIterator(BasicIterator):
             self.dev_iterators = {key:value for (key,value) in iterators.items()} # No cycle for dev iterators since we're traversing whole thing once
         if trainDev == 'train':
             losses = inst.fields["metadata"].metadata["val_losses"]
+            print('\n')
+            print('Actual Losses: ', losses)
+            print('Ideal Losses: ', idealDevLosses)
+            print('\n')
             new_instances = self.dynamic_iterator(losses)
         else:
             new_instances = self.full_iterator()
