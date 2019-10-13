@@ -15,7 +15,8 @@
     },
     "iterator": {
         "type": "basic",
-        "batch_size": 6
+        "batch_size": 6,
+        "max_instances_in_memory": 6
     },
     "model": {
         "type": "nabert",
