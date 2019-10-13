@@ -42,6 +42,7 @@ class DynamicTrainer(Trainer):
             self.iterator.chooseDataset(datasetName)
             val_loss, _ = super()._validation_loss()
             validationLosses[datasetName] = val_loss
+            print('\nCalculated Validation Loss for %s Dataset' % datasetName.upper())
         return validationLosses
 
     @overrides
@@ -52,6 +53,7 @@ class DynamicTrainer(Trainer):
     @overrides
     def _train_epoch(self, epoch: int) -> Dict[str, float]:
         val_losses = self.getValidationLosses()
+        print('\nCalculated Validation Losses for Epoch %d' % epoch)
         self.train_data = list(self.train_data)
         assert len(self.train_data) == 1
         self.train_data[0].fields["metadata"].metadata["val_losses"] = val_losses
