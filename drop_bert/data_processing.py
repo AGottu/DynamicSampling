@@ -176,7 +176,7 @@ class BertDropReader(DatasetReader):
                 if instance is not None:
                     self.numInstances += 1
                     self.dataset_numbers[dataset] = self.dataset_numbers.get(dataset, 0) + 1
-                    if self.numInstances % 500 == 0:
+                    if self.numInstances % 5000 == 0:
                         print('i: ', self.numInstances)
                         print('Dataset Numbers: ', self.dataset_numbers)
                     yield instance
