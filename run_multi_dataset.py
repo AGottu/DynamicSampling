@@ -8,9 +8,14 @@ from allennlp.commands import main
 
 assert len(sys.argv) == 4
 # Use overrides to train on CPU.
-instancesPerEpoch = 50000 if sys.argv[1] == 'all-sample' else None
+dynamic = sys.argv[1] == 'dynamic'
+instancesPerEpoch = 50000 if dynamic else None
+iteratorType = 'dynamic' if dynamic else 'basic'
 numEpochs = int(sys.argv[3])
-overrides = json.dumps({"dataset_reader": {"lazy": True, "allowed_datasets": sys.argv[1], "instances_per_epoch": instancesPerEpoch, "numEpochs": numEpochs}, "iterator": {"instances_per_epoch": instancesPerEpoch}, "trainer": {"cuda_device": 0 if cuda.is_available() else -1, "num_epochs": numEpochs}})
+overrides_dict = {"dataset_reader": {"lazy": True, "allowed_datasets": sys.argv[1], "instances_per_epoch": instancesPerEpoch, "numEpochs": numEpochs}, "iterator": {"type": iteratorType, "instances_per_epoch": instancesPerEpoch}, "trainer": {"cuda_device": 0 if cuda.is_available() else -1, "num_epochs": numEpochs}}
+if dynamic:
+    overrides_dict["trainer"]["type"] = 'dynamic-sample'
+overrides = json.dumps(overrides_dict)
 
 config_file = '%s/configs/nabert-plus-templated.json' % os.getcwd()
 serialization_dir = sys.argv[2]
