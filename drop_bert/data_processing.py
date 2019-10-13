@@ -25,6 +25,9 @@ from pytorch_pretrained_bert import BertTokenizer
 
 from drop_bert.nhelpers import *
 
+DATASETS = ('drop', 'duorc', 'narrativeqa', 'newsqa', 'quoref', 'ropes', 'squad', 'squad2')
+datasetSizes = {'drop': 77394, 'newsqa': 92543, 'squad2': 130310, 'quoref': 19392, 'ropes': 10302, 'narrativeqa': 32717, 'squad': 87596, 'duorc': 54746} # Approximate
+
 @DatasetReader.register("pickled")
 class PickleReader(DatasetReader):
     def __init__(self, lazy: bool = False):
@@ -75,8 +78,7 @@ class BertDropReader(DatasetReader):
                  max_depth: int = 3,
                  extra_numbers: List[float] = [],
                  allowed_datasets: str = 'all',
-                 instances_per_epoch: int = 70000,
-                 numEpochs: int = 5):
+                 instances_per_epoch: int = 70000):
         super(BertDropReader, self).__init__(lazy)
         self.tokenizer = tokenizer
         self.token_indexers = token_indexers
@@ -93,7 +95,6 @@ class BertDropReader(DatasetReader):
         self.extra_numbers = extra_numbers
         self.allowed_datasets = allowed_datasets
         self.instances_per_epoch = instances_per_epoch
-        self.numEpochs = numEpochs
         self.op_dict = {'+': operator.add, '-': operator.sub, '*': operator.mul, '/': operator.truediv}
         self.operations = list(enumerate(self.op_dict.keys()))
         self.templates = [lambda x,y,z: (x + y) * z,
@@ -110,6 +111,9 @@ class BertDropReader(DatasetReader):
             self.word_to_num = get_number_from_word
         else:
             self.word_to_num = DropReaderOrg.convert_word_to_number
+
+        self.trainIterators = dict()
+        self.devIterators = dict()
 
     def dataset_iterator(self, jsonl, dataset):
         for passage_info in jsonl:#dataset['file_handle']:
@@ -156,6 +160,9 @@ class BertDropReader(DatasetReader):
                         answer_annotations += question_answer["validated_answers"]
                 else:
                     answer_annotations = None
+                #print(passage_text)
+                #print('Question: ', question_text)
+                #print('Answer: ', answer_annotations)
                 instance = self.text_to_instance(question_text,
                                                     passage_text,
                                                     passage_tokens,
@@ -169,10 +176,11 @@ class BertDropReader(DatasetReader):
                 if instance is not None:
                     self.numInstances += 1
                     self.dataset_numbers[dataset] = self.dataset_numbers.get(dataset, 0) + 1
-                    if self.numInstances % 5000 == 0:
+                    if self.numInstances % 500 == 0:
                         print('i: ', self.numInstances)
                         print('Dataset Numbers: ', self.dataset_numbers)
                     yield instance
+
         print('Dataset Numbers after finishing %s: ' % dataset, self.dataset_numbers)
     
     @overrides
@@ -181,67 +189,38 @@ class BertDropReader(DatasetReader):
         self.dataset_numbers = dict()
         datasets = []
         cnt = 0
-        trainDev = ''
-        datasetSizes = {'drop': 77394, 'newsqa': 92543, 'squad2': 130310, 'quoref': 19392, 'ropes': 10302, 'narrativeqa': 32717, 'squad': 87596, 'duorc': 54746} # Approximate
         for root, dirs, files in os.walk(file_path):
             for file_name in files:
                 single_file_path_cached = cached_path(root+"/"+file_name)
                 file_handle = open(single_file_path_cached, 'r')
+                domain = file_name.split(".")[1]
+                assert domain in DATASETS
                 datasets.append({'single_file_path':file_name, \
                                  'file_handle': file_handle, \
-                                 'domain': file_name.split(".")[1],
+                                 'domain': domain,
                                  'num_of_questions': 0})
                 cnt += 1
-                trainDev = file_name.split(".")[0]
-                
-        assert trainDev in ('train', 'dev')
-        if self.allowed_datasets == 'all-sample' and trainDev == 'train':
-            datasetIterators = []
-            sample_probs = []
-            for dataset in datasets:
-                assert dataset['domain'] in ('drop', 'duorc', 'narrativeqa', 'newsqa', 'quoref', 'ropes', 'squad', 'squad2')
-                if not dataset['domain'] in ('drop', 'squad2', 'newsqa', 'duorc'):
-                    continue
-                datasetIterators.append(cycle(self.dataset_iterator(dataset['file_handle'], dataset['domain'])))
-                sample_probs.append(datasetSizes[dataset['domain']])
-            alpha = 0.5 # Square root sampling
-            sample_probs = [p**alpha for p in sample_probs]
-            tot = sum(sample_probs)
-            sample_probs = [p/tot for p in sample_probs]
-            for epoch in range(self.numEpochs):
-                for step in range(self.instances_per_epoch):
-                    datasetIndex = np.random.choice(len(sample_probs), p=sample_probs)
-                    yield next(datasetIterators[datasetIndex])
-        elif self.allowed_datasets == 'all' and trainDev == 'train':
+                self.trainDev = file_name.split(".")[0]
+                assert self.trainDev in ('train', 'dev')
+                curr_iterator = self.dataset_iterator(file_handle, domain)
+                if self.trainDev == 'train':
+                    self.trainIterators[domain] = curr_iterator
+                else:
+                    self.devIterators[domain] = curr_iterator
+
+        if self.allowed_datasets in DATASETS:
+            curr_iterator = self.trainIterators[self.allowed_datasets] if self.trainDev == 'train' else self.devIterators[self.allowed_datasets]
+            yield from curr_iterator
+        elif self.allowed_datasets == 'all':
+            iterators = self.trainIterators if self.trainDev == 'train' else self.devIterators
+            for datasetName, curr_iterator in iterators.items():
+                yield from curr_iterator
+        else:
+            assert self.allowed_datasets == 'dynamic'
             for dataset in datasets:
                 curr_iterator = self.dataset_iterator(dataset['file_handle'], dataset['domain'])
-                for instance in curr_iterator:
-                    yield instance
-        else:
-            dataset_list = self.allowed_datasets.split(',')
-            assert dataset_list[0] in ('drop', 'duorc', 'narrativeqa', 'newsqa', 'quoref', 'ropes', 'squad', 'squad2') or self.allowed_datasets in ('all', 'all-sample')
-            if self.allowed_datasets in ('all', 'all-sample'):
-                datasetIterators = [self.dataset_iterator(dataset['file_handle'], dataset['domain']) for dataset in datasets]
-            else:
-                datasetIterators = [self.dataset_iterator(dataset['file_handle'], dataset['domain']) for dataset in datasets if dataset['domain'] in dataset_list]
-            if len(datasetIterators) == 1:
-                curr_iterator = datasetIterators[0]
-                for instance in curr_iterator:
-                    yield instance
-            else:
-                alternatingInstances = 1000#5000 # Number of instances before switching to next dataset
-                finished = [False for x in datasetIterators]
-                i = -1
-                while not all(finished):
-                    i += 1
-                    iteratorIndex = (i // alternatingInstances) % len(datasetIterators)
-                    if not finished[iteratorIndex]:
-                        curr_iterator = datasetIterators[iteratorIndex]
-                        try:
-                            instance = next(curr_iterator)
-                            yield instance
-                        except StopIteration:
-                            finished[iteratorIndex] = True
+                yield next(curr_iterator)
+                return
         
     @overrides
     def text_to_instance(self, 
@@ -297,6 +276,7 @@ class BertDropReader(DatasetReader):
         fields["mask_indices"] = ListField(mask_index_fields)
         
         # Compile question, passage, answer metadata
+        assert self.trainDev in ('train', 'dev')
         metadata = {"original_passage": passage_text,
                     "original_question": question_text,
                     "original_numbers": numbers_in_passage,
@@ -306,7 +286,9 @@ class BertDropReader(DatasetReader):
                     "question_tokens": question_tokens,
                     "question_passage_tokens": question_passage_tokens,
                     "question_id": question_id,
-                    "dataset": dataset}
+                    "dataset": dataset,
+                    "iterators": self.trainIterators if self.trainDev == 'train' else self.devIterators,
+                    "trainDev": self.trainDev}
         
         
         if answer_annotations:
