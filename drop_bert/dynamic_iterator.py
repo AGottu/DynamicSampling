@@ -26,6 +26,7 @@ logger = logging.getLogger(__name__)
 TensorDict = Dict[str, Union[torch.Tensor, Dict[str, torch.Tensor]]]
 
 DATASETS = ('drop', 'duorc', 'narrativeqa', 'newsqa', 'quoref', 'ropes', 'squad', 'squad2')
+datasetSizes = {'drop': 77394, 'newsqa': 92543, 'squad2': 130310, 'quoref': 19392, 'ropes': 10302, 'narrativeqa': 32717, 'squad': 87596, 'duorc': 54746} # Approximate
 idealDevLosses = {'drop': 1311376.45, 'newsqa': 3287434.267, 'squad2': 850474.152, 'quoref': 872098.2, 'ropes': 585288.3, 'narrativeqa': 2505892.7521, 'squad': 1133777.1, 'duorc': 3664924.6}
 
 @DataIterator.register("dynamic")
@@ -45,7 +46,7 @@ class DynamicIterator(BasicIterator):
         super().__init__(batch_size, instances_per_epoch, max_instances_in_memory, cache_instances, track_epoch, maximum_samples_per_batch)
         self.train_iterators = None
         self.dev_iterators = None
-        self.train_dataset_numbers = dict()
+        self.dataset_choice = 'all'
 
     def chooseDataset(self, datasetName: str):
         self.dataset_choice = datasetName
@@ -55,11 +56,16 @@ class DynamicIterator(BasicIterator):
         i = 0
         datasetNames = []
         sample_probs = []
-        for datasetName, dev_loss in losses.items():
-            ideal_dev_loss = idealDevLosses[datasetName]
-            loss_gap = max(0.01, dev_loss - ideal_dev_loss)
-            datasetNames.append(datasetName)
-            sample_probs.append(loss_gap)
+        if losses is None:
+            for datasetName, size in datasetSizes.items():
+                datasetNames.append(datasetName)
+                sample_probs.append(size)
+        else:
+            for datasetName, dev_loss in losses.items():
+                ideal_dev_loss = idealDevLosses[datasetName]
+                loss_gap = max(0.01, dev_loss - ideal_dev_loss)
+                datasetNames.append(datasetName)
+                sample_probs.append(loss_gap)
         alpha = 0.5 # Square root sampling
         sample_probs = [p**alpha for p in sample_probs]
         tot = sum(sample_probs)
@@ -67,12 +73,6 @@ class DynamicIterator(BasicIterator):
         for step in range(self._instances_per_epoch):
             datasetIndex = np.random.choice(len(sample_probs), p=sample_probs)
             datasetChosen = datasetNames[datasetIndex]
-            self.train_dataset_numbers[datasetChosen] = self.train_dataset_numbers.get(datasetChosen, 0) + 1
-            if i % 10 == 0:
-                print('\n')
-                print(self.train_dataset_numbers)
-                print('\n')
-            i += 1
             yield next(self.train_iterators[datasetChosen])
 
     def full_iterator(self):
@@ -103,10 +103,11 @@ class DynamicIterator(BasicIterator):
             self.dev_iterators = {key:value for (key,value) in iterators.items()} # No cycle for dev iterators since we're traversing whole thing once
         if trainDev == 'train':
             losses = inst.fields["metadata"].metadata["val_losses"]
-            print('\n')
-            print('Actual Losses: ', losses)
-            print('Ideal Losses: ', idealDevLosses)
-            print('\n')
+            if losses is not None:
+                print('\n')
+                print('Actual Losses: ', losses)
+                print('Ideal Losses: ', idealDevLosses)
+                print('\n')
             new_instances = self.dynamic_iterator(losses)
         else:
             new_instances = self.full_iterator()
