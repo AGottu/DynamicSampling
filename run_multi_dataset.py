@@ -9,7 +9,7 @@ from allennlp.commands import main
 assert len(sys.argv) == 4
 # Use overrides to train on CPU.
 dynamic = sys.argv[1] == 'dynamic'
-instancesPerEpoch = 50000 if dynamic else None
+instancesPerEpoch = 500 if dynamic else None # 50000
 iteratorType = 'dynamic' if dynamic else 'basic'
 numEpochs = int(sys.argv[3])
 overrides_dict = {"dataset_reader": {"lazy": True, "allowed_datasets": sys.argv[1], "instances_per_epoch": instancesPerEpoch}, "iterator": {"type": iteratorType, "instances_per_epoch": instancesPerEpoch}, "trainer": {"cuda_device": 0 if cuda.is_available() else -1, "num_epochs": numEpochs}}
