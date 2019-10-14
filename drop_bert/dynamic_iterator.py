@@ -77,12 +77,15 @@ class DynamicIterator(BasicIterator):
 
     def full_iterator(self):
         if self.dataset_choice in DATASETS:
-            curr_iterator = self.dev_iterators[self.dataset_choice]
-            yield from curr_iterator
+            curr_list = self.dev_iterators[self.dataset_choice]
+            yield from curr_list
         else:
             assert self.dataset_choice == 'all'
+            yield from self.dev_iterators['ropes'] # The combined dev performances aren't interesting so just cut it short.
+            '''
             for datasetName, curr_iterator in self.dev_iterators.items():
                 yield from curr_iterator
+            '''
 
     @overrides
     def __call__(
@@ -100,7 +103,7 @@ class DynamicIterator(BasicIterator):
         if trainDev == 'train' and self.train_iterators is None:
             self.train_iterators = {key:cycle(value) for (key,value) in iterators.items()} # Cycle for training iterators since we're sampling
         elif trainDev == 'dev' and self.dev_iterators is None:
-            self.dev_iterators = {key:value for (key,value) in iterators.items()} # No cycle for dev iterators since we're traversing whole thing once
+            self.dev_iterators = {key:list(value) for (key,value) in iterators.items()} # No cycle for dev iterators since we're traversing whole thing once
         if trainDev == 'train':
             losses = inst.fields["metadata"].metadata["val_losses"]
             if losses is not None:
