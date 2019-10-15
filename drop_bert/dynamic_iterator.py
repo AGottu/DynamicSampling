@@ -56,6 +56,8 @@ class DynamicIterator(BasicIterator):
         i = 0
         datasetNames = []
         sample_probs = []
+        sampled_instances = []
+        datasetNumbers = dict()
         if losses is None:
             for datasetName, size in datasetSizes.items():
                 datasetNames.append(datasetName)
@@ -73,15 +75,24 @@ class DynamicIterator(BasicIterator):
         for step in range(self._instances_per_epoch):
             datasetIndex = np.random.choice(len(sample_probs), p=sample_probs)
             datasetChosen = datasetNames[datasetIndex]
-            yield next(self.train_iterators[datasetChosen])
+            #yield next(self.train_iterators[datasetChosen])
+            inst = random.choice(self.train_iterators[datasetChosen])
+            sampled_instances.append(inst)
+            if step % 3000 == 0:
+                print('Step: ', step)
+                print('%s Sampling Numbers: %s' % ('Size' if losses is None else 'Dynamic', datasetNumbers))
+            datasetNumbers[datasetChosen] = datasetNumbers.get(datasetChosen, 0) + 1
+        return sampled_instances
 
     def full_iterator(self):
         if self.dataset_choice in DATASETS:
             curr_list = self.dev_iterators[self.dataset_choice]
-            yield from curr_list
+            #yield from curr_list
+            return curr_list
         else:
             assert self.dataset_choice == 'all'
-            yield from self.dev_iterators['ropes'] # The combined dev performances aren't interesting so just cut it short.
+            #yield from self.dev_iterators['ropes'] # The combined dev performances aren't interesting so just cut it short.
+            return self.dev_iterators['ropes']
             '''
             for datasetName, curr_iterator in self.dev_iterators.items():
                 yield from curr_iterator
@@ -101,7 +112,7 @@ class DynamicIterator(BasicIterator):
         assert trainDev in ('train', 'dev')
         iterators = inst.fields["metadata"].metadata["iterators"]
         if trainDev == 'train' and self.train_iterators is None:
-            self.train_iterators = {key:cycle(value) for (key,value) in iterators.items()} # Cycle for training iterators since we're sampling
+            self.train_iterators = {key:list(value) for (key,value) in iterators.items()} # Cycle for training iterators since we're sampling
         elif trainDev == 'dev' and self.dev_iterators is None:
             self.dev_iterators = {key:list(value) for (key,value) in iterators.items()} # No cycle for dev iterators since we're traversing whole thing once
         if trainDev == 'train':
@@ -114,6 +125,7 @@ class DynamicIterator(BasicIterator):
             new_instances = self.dynamic_iterator(losses)
         else:
             new_instances = self.full_iterator()
-        new_instances = list(new_instances)
+        #new_instances = list(new_instances)
+        assert isinstance(new_instances, list)
         ### Ananth ###
         yield from super().__call__(new_instances, num_epochs, shuffle)
