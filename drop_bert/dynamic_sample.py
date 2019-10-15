@@ -48,7 +48,7 @@ class DynamicTrainer(Trainer):
 
     @overrides
     def _train_epoch(self, epoch: int) -> Dict[str, float]:
-        if epoch > 6:
+        if epoch > 2:
             val_losses = self.getValidationLosses()
             print('\nCalculated Validation Losses for Epoch %d' % epoch)
         else:
