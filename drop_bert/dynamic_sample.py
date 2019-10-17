@@ -33,6 +33,7 @@ from allennlp.training.trainer_pieces import TrainerPieces
 
 logger = logging.getLogger(__name__)
 DATASETS = ('drop', 'duorc', 'narrativeqa', 'newsqa', 'quoref', 'ropes', 'squad', 'squad2')
+devsetSizes = {'drop': 9529, 'duorc': 12224, 'narrativeqa': 3393, 'newsqa': 5154, 'quoref': 2407, 'ropes': 1194, 'squad': 10540, 'squad2': 11864}
 
 @TrainerBase.register("dynamic-sample")
 class DynamicTrainer(Trainer):
@@ -41,6 +42,7 @@ class DynamicTrainer(Trainer):
         for datasetName in DATASETS:
             self.iterator.chooseDataset(datasetName)
             val_loss, _ = super()._validation_loss()
+            val_loss /= devsetSizes[datasetName] # Divide by dev set size to get average loss
             validationLosses[datasetName] = val_loss
             print('\nCalculated Validation Loss for %s Dataset' % datasetName.upper())
         self.iterator.chooseDataset('all') # Revert dataset choice to 'all' once Dataset Losses are calculated
@@ -48,7 +50,7 @@ class DynamicTrainer(Trainer):
 
     @overrides
     def _train_epoch(self, epoch: int) -> Dict[str, float]:
-        if epoch > 2:
+        if True:#epoch > 2:
             val_losses = self.getValidationLosses()
             print('\nCalculated Validation Losses for Epoch %d' % epoch)
         else:
