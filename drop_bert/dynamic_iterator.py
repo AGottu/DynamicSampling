@@ -93,6 +93,7 @@ class DynamicIterator(BasicIterator):
             assert isinstance(inst, Instance)
             yield inst
         print('Final %s Sampling Numbers: %s' % ('Size' if losses is None else 'Dynamic', datasetNumbers))
+        assert len(datasetNumbers) == len(DATASETS)
         #return sampled_instances
 
     def full_iterator(self):
