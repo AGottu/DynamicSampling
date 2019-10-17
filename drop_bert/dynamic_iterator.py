@@ -4,7 +4,7 @@ from collections import deque
 from typing import Dict, Union, Iterable, Iterator, List, Optional, Tuple, Deque
 from collections import defaultdict
 import itertools
-from itertools import cycle
+#from itertools import cycle
 import numpy as np
 import math
 import random
@@ -27,7 +27,12 @@ TensorDict = Dict[str, Union[torch.Tensor, Dict[str, torch.Tensor]]]
 
 DATASETS = ('drop', 'duorc', 'narrativeqa', 'newsqa', 'quoref', 'ropes', 'squad', 'squad2')
 datasetSizes = {'drop': 77394, 'newsqa': 92543, 'squad2': 130310, 'quoref': 19392, 'ropes': 10302, 'narrativeqa': 32717, 'squad': 87596, 'duorc': 54746} # Approximate
+devsetSizes = {'drop': 9529, 'duorc': 12224, 'narrativeqa': 3393, 'newsqa': 5154, 'quoref': 2407, 'ropes': 1194, 'squad': 10540, 'squad2': 11864}
 idealDevLosses = {'drop': 1311376.45, 'newsqa': 3287434.267, 'squad2': 850474.152, 'quoref': 872098.2, 'ropes': 585288.3, 'narrativeqa': 2505892.7521, 'squad': 1133777.1, 'duorc': 3664924.6}
+
+def cycle(iterator):
+    while True:
+        yield from iterator
 
 @DataIterator.register("dynamic")
 class DynamicIterator(BasicIterator):
@@ -56,7 +61,8 @@ class DynamicIterator(BasicIterator):
         i = 0
         datasetNames = []
         sample_probs = []
-        sampled_instances = []
+        #sampled_instances = []
+        lossGaps = dict()
         datasetNumbers = dict()
         if losses is None:
             for datasetName, size in datasetSizes.items():
@@ -68,31 +74,36 @@ class DynamicIterator(BasicIterator):
                 loss_gap = max(0.01, dev_loss - ideal_dev_loss)
                 datasetNames.append(datasetName)
                 sample_probs.append(loss_gap)
-        alpha = 0.5 # Square root sampling
-        sample_probs = [p**alpha for p in sample_probs]
+                lossGaps[datasetName] = loss_gap
+            print('Loss Gaps: ', lossGaps)
+            print('\n')
         tot = sum(sample_probs)
         sample_probs = [p/tot for p in sample_probs]
         for step in range(self._instances_per_epoch):
             datasetIndex = np.random.choice(len(sample_probs), p=sample_probs)
             datasetChosen = datasetNames[datasetIndex]
-            #yield next(self.train_iterators[datasetChosen])
-            inst = random.choice(self.train_iterators[datasetChosen])
-            sampled_instances.append(inst)
+            #inst = random.choice(self.train_iterators[datasetChosen])
+            #sampled_instances.append(inst)
             if step % 3000 == 0:
                 print('Step: ', step)
                 print('%s Sampling Numbers: %s' % ('Size' if losses is None else 'Dynamic', datasetNumbers))
             datasetNumbers[datasetChosen] = datasetNumbers.get(datasetChosen, 0) + 1
-        return sampled_instances
+            inst = next(self.train_iterators[datasetChosen])
+            assert inst is not None
+            assert isinstance(inst, Instance)
+            yield inst
+        print('Final %s Sampling Numbers: %s' % ('Size' if losses is None else 'Dynamic', datasetNumbers))
+        #return sampled_instances
 
     def full_iterator(self):
         if self.dataset_choice in DATASETS:
             curr_list = self.dev_iterators[self.dataset_choice]
-            #yield from curr_list
-            return curr_list
+            yield from curr_list
+            #return curr_list
         else:
             assert self.dataset_choice == 'all'
-            #yield from self.dev_iterators['ropes'] # The combined dev performances aren't interesting so just cut it short.
-            return self.dev_iterators['ropes']
+            yield from self.dev_iterators['ropes'] # The combined dev performances aren't interesting so just cut it short.
+            #return self.dev_iterators['ropes']
             '''
             for datasetName, curr_iterator in self.dev_iterators.items():
                 yield from curr_iterator
@@ -112,7 +123,7 @@ class DynamicIterator(BasicIterator):
         assert trainDev in ('train', 'dev')
         iterators = inst.fields["metadata"].metadata["iterators"]
         if trainDev == 'train' and self.train_iterators is None:
-            self.train_iterators = {key:list(value) for (key,value) in iterators.items()} # Cycle for training iterators since we're sampling
+            self.train_iterators = {key:cycle(value) for (key,value) in iterators.items()} # Cycle for training iterators since we're sampling
         elif trainDev == 'dev' and self.dev_iterators is None:
             self.dev_iterators = {key:list(value) for (key,value) in iterators.items()} # No cycle for dev iterators since we're traversing whole thing once
         if trainDev == 'train':
@@ -125,7 +136,7 @@ class DynamicIterator(BasicIterator):
             new_instances = self.dynamic_iterator(losses)
         else:
             new_instances = self.full_iterator()
-        #new_instances = list(new_instances)
-        assert isinstance(new_instances, list)
+        new_instances = list(new_instances)
+        #assert isinstance(new_instances, list)
         ### Ananth ###
         yield from super().__call__(new_instances, num_epochs, shuffle)
