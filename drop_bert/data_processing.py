@@ -183,6 +183,7 @@ class BertDropReader(DatasetReader):
                     yield instance
 
         print('Dataset Numbers after finishing %s: ' % dataset, self.dataset_numbers)
+        jsonl.close()
     
     @overrides
     def _read(self, file_path: str):
@@ -193,11 +194,9 @@ class BertDropReader(DatasetReader):
         for root, dirs, files in os.walk(file_path):
             for file_name in files:
                 single_file_path_cached = cached_path(root+"/"+file_name)
-                file_handle = open(single_file_path_cached, 'r')
                 domain = file_name.split(".")[1]
                 assert domain in DATASETS
                 datasets.append({'single_file_path':file_name, \
-                                 'file_handle': file_handle, \
                                  'domain': domain,
                                  'num_of_questions': 0})
                 cnt += 1
@@ -219,8 +218,8 @@ class BertDropReader(DatasetReader):
         else:
             assert self.allowed_datasets == 'dynamic'
             for dataset in datasets:
-                curr_iterator = self.dataset_iterator(dataset['file_handle'], dataset['domain'])
-                yield next(curr_iterator)
+                inst = self.text_to_instance('', '', [], [], [], [], [])
+                yield inst
                 return
         
     @overrides
