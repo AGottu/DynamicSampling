@@ -51,8 +51,10 @@ class DynamicTrainer(Trainer):
     @overrides
     def _train_epoch(self, epoch: int) -> Dict[str, float]:
         if True:#epoch > 2:
-            val_losses = self.getValidationLosses()
-            #val_losses = {'drop': 1718975.6834546016, 'duorc': 3749190.303248965, 'narrativeqa': 9269857.166379493, 'newsqa': 7964224.474346278, 'quoref': 4538904.688102965, 'ropes': 5965339.608114421, 'squad': 1339670.0603516423, 'squad2': 884404.0366214952}
+            if epoch == 0:
+                val_losses = {'drop': 1718975.6834546016, 'duorc': 3749190.303248965, 'narrativeqa': 9269857.166379493, 'newsqa': 7964224.474346278, 'quoref': 4538904.688102965, 'ropes': 5965339.608114421, 'squad': 1339670.0603516423, 'squad2': 884404.0366214952}
+            else:
+                val_losses = self.getValidationLosses()
             print('\nCalculated Validation Losses for Epoch %d' % epoch)
         else:
             val_losses = None
