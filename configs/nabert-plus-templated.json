@@ -17,6 +17,10 @@
         "type": "basic",
         "batch_size": 4
     },
+    "validation_iterator": {
+        "type": "basic",
+        "batch_size": 4
+    },
     "model": {
         "type": "augmented_bert",
         "bert_pretrained_model": "bert-base-uncased",
