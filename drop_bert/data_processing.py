@@ -115,8 +115,9 @@ class BertDropReader(DatasetReader):
         self.trainIterators = dict()
         self.devIterators = dict()
 
-    def dataset_iterator(self, jsonl, dataset):
-        for passage_info in jsonl:#dataset['file_handle']:
+    def dataset_iterator(self, single_file_path_cached, dataset):
+        jsonl = open(single_file_path_cached, 'r')
+        for passage_info in jsonl:
             passage_info = json.loads(passage_info)
             passage_text = passage_info["passage"].strip()
 
@@ -202,7 +203,7 @@ class BertDropReader(DatasetReader):
                 cnt += 1
                 self.trainDev = file_name.split(".")[0]
                 assert self.trainDev in ('train', 'dev')
-                curr_iterator = self.dataset_iterator(file_handle, domain)
+                curr_iterator = self.dataset_iterator(single_file_path_cached, domain)
                 if self.trainDev == 'train':
                     self.trainIterators[domain] = curr_iterator
                 else:
