@@ -178,8 +178,9 @@ class BertDropReader(DatasetReader):
                     self.numInstances += 1
                     self.dataset_numbers[dataset] = self.dataset_numbers.get(dataset, 0) + 1
                     if self.numInstances % 5000 == 0:
-                        print('i: ', self.numInstances)
-                        print('Dataset Numbers: ', self.dataset_numbers)
+                        pass
+                        #print('i: ', self.numInstances)
+                        #print('Dataset Numbers: ', self.dataset_numbers)
                     yield instance
 
         print('Dataset Numbers after finishing %s: ' % dataset, self.dataset_numbers)
