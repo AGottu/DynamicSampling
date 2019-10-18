@@ -4,7 +4,7 @@ from collections import deque
 from typing import Dict, Union, Iterable, Iterator, List, Optional, Tuple, Deque
 from collections import defaultdict
 import itertools
-#from itertools import cycle
+from itertools import cycle
 import numpy as np
 import math
 import random
@@ -29,10 +29,6 @@ DATASETS = ('drop', 'duorc', 'narrativeqa', 'newsqa', 'quoref', 'ropes', 'squad'
 datasetSizes = {'drop': 77394, 'newsqa': 92543, 'squad2': 130310, 'quoref': 19392, 'ropes': 10302, 'narrativeqa': 32717, 'squad': 87596, 'duorc': 54746} # Approximate
 devsetSizes = {'drop': 9529, 'duorc': 12224, 'narrativeqa': 3393, 'newsqa': 5154, 'quoref': 2407, 'ropes': 1194, 'squad': 10540, 'squad2': 11864}
 idealDevLosses = {'drop': 1311376.45, 'newsqa': 3287434.267, 'squad2': 850474.152, 'quoref': 872098.2, 'ropes': 585288.3, 'narrativeqa': 2505892.7521, 'squad': 1133777.1, 'duorc': 3664924.6}
-
-def cycle(iterator):
-    while True:
-        yield from iterator
 
 @DataIterator.register("dynamic")
 class DynamicIterator(BasicIterator):
