@@ -18,7 +18,7 @@
         "batch_size": 4
     },
     "validation_iterator": {
-        "type": "basic",
+        "type": "multi",
         "batch_size": 4
     },
     "model": {
