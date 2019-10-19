@@ -37,30 +37,27 @@ devsetSizes = {'drop': 9529, 'duorc': 12224, 'narrativeqa': 3393, 'newsqa': 5154
 
 @TrainerBase.register("dynamic-sample")
 class DynamicTrainer(Trainer):
-    def getValidationLosses(self) -> Dict[str, float]:
-        validationLosses = dict()
+    def getValidationMetrics(self) -> Dict[str, float]:
+        validationMetrics = dict()
         for datasetName in DATASETS:
             self.iterator.chooseDataset(datasetName)
-            val_loss, _ = super()._validation_loss()
-            val_loss /= devsetSizes[datasetName] # Divide by dev set size to get average loss
-            validationLosses[datasetName] = val_loss
-            print('\nCalculated Validation Loss for %s Dataset' % datasetName.upper())
+            val_loss, num_batches = super()._validation_loss()
+            val_metrics = training_util.get_metrics(self.model, val_loss, num_batches, reset=True)
+            validationMetrics[datasetName] = val_metrics
+            print('\nCalculated Validation Metrics for %s Dataset' % datasetName.upper())
         self.iterator.chooseDataset('all') # Revert dataset choice to 'all' once Dataset Losses are calculated
-        return validationLosses
+        return validationMetrics
 
     @overrides
     def _train_epoch(self, epoch: int) -> Dict[str, float]:
         if True:#epoch > 2:
-            if epoch == 0:
-                val_losses = {'drop': 1718975.6834546016, 'duorc': 3749190.303248965, 'narrativeqa': 9269857.166379493, 'newsqa': 7964224.474346278, 'quoref': 4538904.688102965, 'ropes': 5965339.608114421, 'squad': 1339670.0603516423, 'squad2': 884404.0366214952}
-            else:
-                val_losses = self.getValidationLosses()
-            print('\nCalculated Validation Losses for Epoch %d' % epoch)
+            val_metrics = self.getValidationLosses()
+            print('\nCalculated Validation Metrics for Epoch %d' % epoch)
         else:
-            val_losses = None
+            val_metrics = None
         self.train_data = list(self.train_data)
         assert len(self.train_data) == 1
-        self.train_data[0].fields["metadata"].metadata["val_losses"] = val_losses
+        self.train_data[0].fields["metadata"].metadata["val_metrics"] = val_metrics
         self.train_data[0].fields["metadata"].metadata["epoch"] = epoch
         return super()._train_epoch(epoch)
 
