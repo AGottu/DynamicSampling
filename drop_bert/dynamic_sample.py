@@ -50,7 +50,7 @@ class DynamicTrainer(Trainer):
 
     @overrides
     def _train_epoch(self, epoch: int) -> Dict[str, float]:
-        if True:#epoch > 2:
+        if epoch > 0:
             val_metrics = self.getValidationMetrics()
             print('\nCalculated Validation Metrics for Epoch %d' % epoch)
         else:
