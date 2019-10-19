@@ -86,8 +86,8 @@ class DynamicIterator(BasicIterator):
                 ideal_dev_em = idealDevEM[datasetName]
                 ideal_dev_f1 = idealDevF1[datasetName]
                 loss_gap = max(0.01, dev_loss - ideal_dev_loss)
-                em_gap = max(0.01, dev_em - ideal_dev_em)
-                f1_gap = max(0.01, dev_f1 - ideal_dev_f1)
+                em_gap = max(0.01, ideal_dev_em - dev_em)
+                f1_gap = max(0.01, ideal_dev_f1 - dev_f1)
                 lossGaps[datasetName] = loss_gap
                 EMGaps[datasetName] = em_gap
                 F1Gaps[datasetName] = f1_gap
