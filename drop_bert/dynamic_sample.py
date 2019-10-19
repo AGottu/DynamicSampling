@@ -45,7 +45,7 @@ class DynamicTrainer(Trainer):
             val_metrics = training_util.get_metrics(self.model, val_loss, num_batches, reset=True)
             validationMetrics[datasetName] = val_metrics
             print('\nCalculated Validation Metrics for %s Dataset' % datasetName.upper())
-        self.iterator.chooseDataset('all') # Revert dataset choice to 'all' once Dataset Losses are calculated
+        self._validation_iterator.chooseDataset('all') # Revert dataset choice to 'all' once Dataset Losses are calculated
         return validationMetrics
 
     @overrides
