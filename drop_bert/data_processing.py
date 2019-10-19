@@ -218,10 +218,8 @@ class BertDropReader(DatasetReader):
                 yield from curr_iterator
         else:
             assert self.allowed_datasets == 'dynamic'
-            for dataset in datasets:
-                inst = self.text_to_instance('', '', [], [], [], [], [])
-                yield inst
-                return
+            inst = self.text_to_instance('', '', [], [], [], [], [])
+            yield inst
         
     @overrides
     def text_to_instance(self, 
