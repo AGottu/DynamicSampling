@@ -97,6 +97,8 @@ class DynamicIterator(BasicIterator):
             print('EM Gaps: ', EMGaps)
             print('F1 Gaps: ', F1Gaps)
             print('\n')
+            print(metrics)
+            print('\n')
         tot = sum(sample_probs)
         sample_probs = [p/tot for p in sample_probs]
         for step in range(self._instances_per_epoch):
