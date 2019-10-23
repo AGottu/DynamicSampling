@@ -92,7 +92,7 @@ class DynamicIterator(BasicIterator):
                 EMGaps[datasetName] = em_gap
                 F1Gaps[datasetName] = f1_gap
                 datasetNames.append(datasetName)
-                sample_probs.append(em_gap)#(loss_gap)
+                sample_probs.append(em_gap + f1_gap)#(loss_gap)
             print('Loss Gaps: ', lossGaps)
             print('EM Gaps: ', EMGaps)
             print('F1 Gaps: ', F1Gaps)
