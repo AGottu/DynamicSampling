@@ -18,7 +18,8 @@ if dynamic:
     overrides_dict["trainer"]["type"] = 'dynamic-sample'
 overrides = json.dumps(overrides_dict)
 
-config_file = '%s/configs/nabert-plus-templated.json' % os.getcwd()
+#config_file = '%s/configs/nabert-plus-templated.json' % os.getcwd()
+config_file = '%s/configs/nabert2.json' % os.getcwd()
 serialization_dir = sys.argv[2]
 
 # Training will fail if the serialization directory already
