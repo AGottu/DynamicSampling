@@ -40,17 +40,19 @@ class DynamicTrainer(Trainer):
     def getValidationMetrics(self) -> Dict[str, float]:
         validationMetrics = dict()
         for datasetName in DATASETS:
+            torch.cuda.empty_cache()
             self._validation_iterator.chooseDataset(datasetName)
             val_loss, num_batches = super()._validation_loss()
             val_metrics = training_util.get_metrics(self.model, val_loss, num_batches, reset=True)
             validationMetrics[datasetName] = val_metrics
             print('\nCalculated Validation Metrics for %s Dataset' % datasetName.upper())
         self._validation_iterator.chooseDataset('all') # Revert dataset choice to 'all' once Dataset Losses are calculated
+        torch.cuda.empty_cache()
         return validationMetrics
 
     @overrides
     def _train_epoch(self, epoch: int) -> Dict[str, float]:
-        if epoch > 0:
+        if epoch > -1:#0:
             val_metrics = self.getValidationMetrics()
             print('\nCalculated Validation Metrics for Epoch %d' % epoch)
         else:
