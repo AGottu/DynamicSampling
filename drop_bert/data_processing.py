@@ -211,8 +211,12 @@ class BertDropReader(DatasetReader):
 
         if self.allowed_datasets in DATASETS:
             curr_iterator = self.trainIterators[self.allowed_datasets] if self.trainDev == 'train' else self.devIterators[self.allowed_datasets]
-            for i in range(5000):
-                yield next(curr_iterator)
+            if self.trainDev == 'train':
+                for i in range(87599):
+                    yield next(curr_iterator)
+            else:
+                for i in range(10540):
+                    yield next(curr_iterator)
             #yield from curr_iterator
         elif self.allowed_datasets == 'all':
             iterators = self.trainIterators if self.trainDev == 'train' else self.devIterators
