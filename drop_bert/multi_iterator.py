@@ -66,7 +66,7 @@ class MultiIterator(BasicIterator):
         assert trainDev == 'dev'
         iterators = inst.fields["metadata"].metadata["iterators"]
         if self.dev_iterators is None:
-            self.dev_iterators = {key:list(value) for (key,value) in iterators.items()}
+            self.dev_iterators = {key:value for (key,value) in iterators.items()}
         new_instances = self.dev_iterators[self.dataset_choice] if self.dataset_choice in DATASETS else self.dev_iterators['ropes']
         ### Ananth ###
         yield from super().__call__(new_instances, num_epochs, shuffle)
