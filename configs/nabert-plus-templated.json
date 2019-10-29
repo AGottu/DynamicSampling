@@ -19,7 +19,7 @@
     },
     "validation_iterator": {
         "type": "multi",
-        "batch_size": 4,
+        "batch_size": 2,
         "max_instances_in_memory": 4
     },
     "model": {
