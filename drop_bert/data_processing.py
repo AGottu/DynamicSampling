@@ -226,7 +226,7 @@ class BertDropReader(DatasetReader):
                 yield from curr_iterator
         else:
             assert self.allowed_datasets == 'dynamic'
-            inst = self.text_to_instance('', '', [], [], [], [], [])
+            inst = self.text_to_instance('', '', [], [], [], [], [], skipEmpty=False)
             yield inst
         
     @overrides
@@ -241,7 +241,7 @@ class BertDropReader(DatasetReader):
                          question_id: str = None,
                          answer_annotations: List[Dict] = None,
                          dataset: str = None
-                         ) -> Union[Instance, None]:
+                         skipEmpty: bool = True) -> Union[Instance, None]:
         # Tokenize question and passage
         question_tokens = self.tokenizer.tokenize(question_text)
         qlen = len(question_tokens)
@@ -368,7 +368,7 @@ class BertDropReader(DatasetReader):
                 valid_counts = DropReaderOrg.find_valid_counts(numbers_for_count, target_numbers)
             
             if len(valid_counts) == 0 and len(valid_expressions) == 0 and len(valid_question_spans) == 0 and len(valid_passage_spans) == 0:
-                if not self.allowed_datasets == 'dynamic':
+                if skipEmpty:
                     return None
             # Update metadata with answer info
             answer_info = {"answer_passage_spans": valid_passage_spans,
