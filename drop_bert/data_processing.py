@@ -367,6 +367,8 @@ class BertDropReader(DatasetReader):
                 numbers_for_count = list(range(self.max_count + 1))
                 valid_counts = DropReaderOrg.find_valid_counts(numbers_for_count, target_numbers)
             
+            if len(valid_counts) == 0 and len(valid_expressions) == 0 and len(valid_question_spans) == 0 and len(valid_passage_spans) == 0:
+                continue
             # Update metadata with answer info
             answer_info = {"answer_passage_spans": valid_passage_spans,
                            "answer_question_spans": valid_question_spans,
