@@ -240,7 +240,7 @@ class BertDropReader(DatasetReader):
                          number_len: List[int],
                          question_id: str = None,
                          answer_annotations: List[Dict] = None,
-                         dataset: str = None
+                         dataset: str = None,
                          skipEmpty: bool = True) -> Union[Instance, None]:
         # Tokenize question and passage
         question_tokens = self.tokenizer.tokenize(question_text)
