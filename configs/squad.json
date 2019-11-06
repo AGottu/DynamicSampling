@@ -6,7 +6,8 @@
                 "type": "single_id",
                 "lowercase_tokens": true
             }
-        }
+        },
+        "lazy": true
     },
     "iterator": {
         "type": "basic",
