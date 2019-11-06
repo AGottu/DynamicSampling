@@ -126,7 +126,7 @@ class SquadReader(DatasetReader):
                          dataset: str = None,
                          skipEmpty: bool = True) -> Union[Instance, None]:
         # Tokenize question and passage
-        question_tokens = self.tokenizer.tokenize(question_text)
+        question_tokens = self._tokenizer.tokenize(question_text)
         qlen = len(question_tokens)
         plen = len(passage_tokens)
 
@@ -183,7 +183,7 @@ class SquadReader(DatasetReader):
         
         if answer_annotations:
             for annotation in answer_annotations:
-                tokenized_spans = [[token.text for token in self.tokenizer.tokenize(answer)] for answer in annotation['spans']]
+                tokenized_spans = [[token.text for token in self._tokenizer.tokenize(answer)] for answer in annotation['spans']]
                 annotation['spans'] = [tokenlist_to_passage(token_list) for token_list in tokenized_spans]
             
             # Get answer type, answer text, tokenize
