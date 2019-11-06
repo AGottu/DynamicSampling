@@ -71,6 +71,14 @@ class SquadReader(DatasetReader):
         self.passage_length_limit = passage_length_limit
         self.question_length_limit = question_length_limit
         self.skip_invalid_examples = skip_invalid_examples
+        
+        ## Ananth ##
+        self.max_pieces = 512
+        self.max_count = 10
+        self.max_spans = 10
+        self.max_numbers_expression = 3
+
+        ## Ananth ##
 
     @overrides
     def _read(self, file_path: str):
