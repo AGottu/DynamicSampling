@@ -1,4 +1,5 @@
 #!/bin/sh
+pip install git+https://github.com/allenai/allennlp.git
 pip install gdown
 python $PWD/download_files.py
 unzip -o $PWD/data/all_datasets.zip -d $PWD/data
