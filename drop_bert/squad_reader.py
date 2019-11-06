@@ -16,6 +16,7 @@ from allennlp.data.tokenizers import Token, Tokenizer, SpacyTokenizer
 from allennlp.data.fields import Field, TextField, IndexField, LabelField, ListField, \
                                  MetadataField, SequenceLabelField, SpanField, ArrayField
 from drop_bert.drop_reader import DropReaderOrg
+from drop_bert.nhelpers import *
 
 logger = logging.getLogger(__name__)
 
@@ -70,7 +71,7 @@ class SquadReader(DatasetReader):
     ) -> None:
         super().__init__(lazy)
         self._tokenizer = tokenizer or SpacyTokenizer()
-        self._token_indexers = token_indexers or {"tokens": SingleIdTokenIndexer()}
+        self.token_indexers = token_indexers or {"tokens": SingleIdTokenIndexer()}
         self.passage_length_limit = passage_length_limit
         self.question_length_limit = question_length_limit
         self.skip_invalid_examples = skip_invalid_examples
@@ -81,7 +82,6 @@ class SquadReader(DatasetReader):
         self.max_spans = 10
         self.max_numbers_expression = 3
         self.extra_numbers = []
-        self.token_indexers = None
         self.exp_search = 'add_sub'
         self.word_to_num = DropReaderOrg.convert_word_to_number
         ## Ananth ##
