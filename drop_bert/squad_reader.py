@@ -1,6 +1,6 @@
 import json
 import logging
-from typing import Any, Dict, List, Tuple, Optional
+from typing import Any, Dict, List, Union, Tuple, Optional
 
 from overrides import overrides
 
@@ -10,6 +10,9 @@ from allennlp.data.instance import Instance
 from allennlp.data.dataset_readers.reading_comprehension import util
 from allennlp.data.token_indexers import SingleIdTokenIndexer, TokenIndexer
 from allennlp.data.tokenizers import Token, Tokenizer, SpacyTokenizer
+from allennlp.data.fields import Field, TextField, IndexField, LabelField, ListField, \
+                                 MetadataField, SequenceLabelField, SpanField, ArrayField
+from drop_bert.drop_reader import DropReaderOrg
 
 logger = logging.getLogger(__name__)
 
