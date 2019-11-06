@@ -18,7 +18,7 @@ from allennlp.data.fields import Field, TextField, IndexField, LabelField, ListF
 from allennlp.data.instance import Instance
 from allennlp.data.token_indexers.token_indexer import TokenIndexer
 from allennlp.data.token_indexers.wordpiece_indexer import WordpieceIndexer
-from allennlp.data.tokenizers import Token, Tokenizer, WordTokenizer
+from allennlp.data.tokenizers import Token, Tokenizer, SpacyTokenizer
 
 
 from pytorch_pretrained_bert import BertTokenizer
@@ -89,7 +89,7 @@ class BertDropReader(DatasetReader):
         self.answer_type = answer_type
         self.use_validated = use_validated
         self.wordpiece_numbers = wordpiece_numbers
-        self.number_tokenizer = number_tokenizer or WordTokenizer()
+        self.number_tokenizer = number_tokenizer or SpacyTokenizer()
         self.exp_search = exp_search
         self.max_depth = max_depth
         self.extra_numbers = extra_numbers
