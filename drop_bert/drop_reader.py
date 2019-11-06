@@ -18,7 +18,7 @@ from allennlp.data.dataset_readers.reading_comprehension.util import (IGNORED_TO
                                                                       split_tokens_by_hyphen)
 from allennlp.data.instance import Instance
 from allennlp.data.token_indexers import SingleIdTokenIndexer, TokenIndexer
-from allennlp.data.tokenizers import Token, Tokenizer, WordTokenizer
+from allennlp.data.tokenizers import Token, Tokenizer, SpacyTokenizer
 
 
 logger = logging.getLogger(__name__)
@@ -92,7 +92,7 @@ class DropReaderOrg(DatasetReader):
                  instance_format: str = "drop",
                  relaxed_span_match_for_finding_labels: bool = True) -> None:
         super().__init__(lazy)
-        self._tokenizer = tokenizer or WordTokenizer()
+        self._tokenizer = tokenizer or SpacyTokenizer()
         self._token_indexers = token_indexers or {"tokens": SingleIdTokenIndexer()}
         self.passage_length_limit = passage_length_limit
         self.question_length_limit = question_length_limit
