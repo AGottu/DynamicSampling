@@ -1,10 +1,14 @@
 {
     "dataset_reader": {
         "type": "squad_reader",
+        "tokenizer": {
+            "type": "bert-drop",
+            "pretrained_model": "bert-base-uncased"
+        },
         "token_indexers": {
             "tokens": {
-                "type": "single_id",
-                "lowercase_tokens": true
+                "type": "bert-drop",
+                "pretrained_model": "bert-base-uncased"
             }
         },
         "lazy": true
