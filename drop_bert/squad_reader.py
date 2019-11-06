@@ -77,7 +77,10 @@ class SquadReader(DatasetReader):
         self.max_count = 10
         self.max_spans = 10
         self.max_numbers_expression = 3
-
+        self.extra_numbers = []
+        self.token_indexers = None
+        self.exp_search = 'add_sub'
+        self.word_to_num = DropReaderOrg.convert_word_to_number
         ## Ananth ##
 
     @overrides
@@ -174,7 +177,7 @@ class SquadReader(DatasetReader):
         fields["mask_indices"] = ListField(mask_index_fields)
         
         # Compile question, passage, answer metadata
-        assert self.trainDev in ('train', 'dev')
+        #assert self.trainDev in ('train', 'dev')
         metadata = {"original_passage": passage_text,
                     "original_question": question_text,
                     "original_numbers": numbers_in_passage,
