@@ -173,9 +173,9 @@ class SquadReader(DatasetReader):
                     "question_tokens": question_tokens,
                     "question_passage_tokens": question_passage_tokens,
                     "question_id": question_id,
-                    "dataset": dataset,
-                    "iterators": self.trainIterators if self.trainDev == 'train' else self.devIterators,
-                    "trainDev": self.trainDev}
+                    "dataset": 'squad'}#,
+                    #"iterators": self.trainIterators if self.trainDev == 'train' else self.devIterators,
+                    #"trainDev": self.trainDev}
         
         
         if answer_annotations:
