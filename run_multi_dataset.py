@@ -6,7 +6,7 @@ from torch import cuda
 
 from allennlp.commands import main
 
-'''
+#'''
 assert len(sys.argv) == 4
 # Use overrides to train on CPU.
 dynamic = sys.argv[1] == 'dynamic'
@@ -22,10 +22,12 @@ overrides = json.dumps(overrides_dict)
 config_file = '%s/configs/nabert-plus-templated.json' % os.getcwd()
 #config_file = '%s/configs/nabert2.json' % os.getcwd()
 serialization_dir = sys.argv[2]
+#'''
 '''
 config_file = '%s/configs/squad.json' % os.getcwd()
 serialization_dir = '/agottumu/squad'
 overrides = json.dumps({})
+'''
 
 # Training will fail if the serialization directory already
 # has stuff in it. If you are running the same training loop
