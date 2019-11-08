@@ -1,8 +1,9 @@
 #!/bin/sh
+pip install git+https://github.com/allenai/allennlp.git
 pip install gdown
 python $PWD/download_files.py
 unzip -o $PWD/data/all_datasets.zip -d $PWD/data
-python $PWD/download_drop.py
+#python $PWD/download_drop.py
 rm -r /agottumu/results
 mkdir /agottumu/results
 python -u $PWD/evaluate_multi_dataset.py drop $1 $2
