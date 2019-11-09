@@ -7,7 +7,7 @@ from torch import cuda
 from allennlp.commands import main
 
 dataset = sys.argv[1]
-overrides = json.dumps({"dataset_reader": {"lazy": True, "allowed_datasets": dataset}, "validation_iterator": {"type": 'basic'}})
+overrides = json.dumps({"dataset_reader": {"lazy": True, "allowed_datasets": dataset}, "iterator": {"type": 'basic', "batch_size": 4}, "validation_iterator": {"type": 'basic', "batch_size": 4}})
 
 archive_file = sys.argv[2]
 input_file = '%s/data/all_datasets/dev' % os.getcwd()
