@@ -12,6 +12,7 @@ overrides = json.dumps({"dataset_reader": {"lazy": True, "allowed_datasets": dat
 archive_file = sys.argv[2]
 input_file = '%s/data/all_datasets/dev' % os.getcwd()
 output_file = '%s/%s.json' % (sys.argv[3], dataset)
+weights_file = '/agottumu/dynamic/model_state_epoch_12.th'
 
 # Assemble the command into sys.argv
 sys.argv = [
@@ -22,7 +23,8 @@ sys.argv = [
     "--output-file", output_file,
     "--cuda-device", 0,
     "--include-package", "drop_bert",
-    "-o", overrides
+    "-o", overrides,
+    "--weights-file", weights_file
 ]
 
 main()
