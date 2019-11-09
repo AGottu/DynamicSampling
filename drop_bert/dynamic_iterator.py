@@ -27,11 +27,28 @@ TensorDict = Dict[str, Union[torch.Tensor, Dict[str, torch.Tensor]]]
 
 DATASETS = ('drop', 'duorc', 'narrativeqa', 'newsqa', 'quoref', 'ropes', 'squad', 'squad2')
 datasetSizes = {'drop': 77394, 'newsqa': 92543, 'squad2': 130310, 'quoref': 19392, 'ropes': 10302, 'narrativeqa': 32717, 'squad': 87596, 'duorc': 54746} # Approximate
-devsetSizes = {'drop': 9529, 'duorc': 12224, 'narrativeqa': 3393, 'newsqa': 5154, 'quoref': 2407, 'ropes': 1194, 'squad': 10540, 'squad2': 11864}
+devsetSizes = {'drop': 9530, 'duorc': 12224, 'narrativeqa': 3393, 'newsqa': 5154, 'quoref': 2407, 'ropes': 1194, 'squad': 10570, 'squad2': 11864}
 idealDevLosses = {'drop': 1311376.45, 'newsqa': 3287434.267, 'squad2': 850474.152, 'quoref': 872098.2, 'ropes': 585288.3, 'narrativeqa': 2505892.7521, 'squad': 1133777.1, 'duorc': 3664924.6}
-idealDevEM = {'drop': 0.53872, 'newsqa': 0.34245, 'squad2': 0.66015, 'quoref': 0.5089, 'ropes': 0.505, 'narrativeqa': 0.30622, 'squad': 0.58, 'duorc': 0.2325}
-idealDevF1 = {'drop': 0.572664, 'newsqa': 0.48785, 'squad2': 0.696, 'quoref': 0.558924, 'ropes': 0.5837, 'narrativeqa': 0.43874, 'squad': 0.75, 'duorc': 0.30805}
+idealDevEM = {'drop': 0.53872, 'newsqa': 0.34245, 'squad2': 0.66015, 'quoref': 0.5089, 'ropes': 0.505, 'narrativeqa': 0.30622, 'squad': 0.56613, 'duorc': 0.2325}
+idealDevF1 = {'drop': 0.572664, 'newsqa': 0.48785, 'squad2': 0.696, 'quoref': 0.558924, 'ropes': 0.5837, 'narrativeqa': 0.43874, 'squad': 0.72644, 'duorc': 0.30805}
 # Old Squad Numbers: EM = 0.3688, F1 = 0.5929
+
+def cumulativeMetrics(metrics):
+    cumulativeEM = 0.0
+    cumulativeF1 = 0.0
+    cumulativeSize = 0
+    for datasetName, dev_metrics in metrics.items():
+        dev_loss = dev_metrics['loss']
+        dev_em = dev_metrics['em']
+        dev_f1 = dev_metrics['f1']
+        dev_size = devsetSizes[datasetName]
+        cumulativeEM += (dev_em * dev_size)
+        cumulativeF1 += (dev_f1 * dev_size)
+        cumulativeSize += dev_size
+    cumulativeEM /= cumulativeSize
+    cumulativeF1 /= cumulativeSize
+    print('Cumulative EM: ', cumulativeEM)
+    print('Cumulative F1: ', cumulativeF1)
 
 @DataIterator.register("dynamic")
 class DynamicIterator(BasicIterator):
@@ -99,6 +116,8 @@ class DynamicIterator(BasicIterator):
             print('F1 Gaps: ', F1Gaps)
             print('\n')
             print(metrics)
+            print('\n')
+            cumulativeMetrics(metrics)
             print('\n')
         tot = sum(sample_probs)
         sample_probs = [p/tot for p in sample_probs]
