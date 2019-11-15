@@ -105,7 +105,7 @@ class DynamicIterator(BasicIterator):
         EMGaps = dict()
         F1Gaps = dict()
         datasetNumbers = dict()
-        if metrics is None or sampling_method == 'size':
+        if (metrics is None and sampling_method == 'dynamic') or sampling_method == 'size':
             for datasetName, size in datasetSizes.items():
                 datasetNames.append(datasetName)
                 sample_probs.append(size)
@@ -142,6 +142,7 @@ class DynamicIterator(BasicIterator):
             print('EM Gaps: ', EMGaps)
             print('F1 Gaps: ', F1Gaps)
             print('\n')
+        if metrics is not None:
             print(metrics)
             print('\n')
             cumulativeMetrics(metrics)
