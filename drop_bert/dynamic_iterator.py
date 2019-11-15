@@ -26,8 +26,9 @@ logger = logging.getLogger(__name__)
 TensorDict = Dict[str, Union[torch.Tensor, Dict[str, torch.Tensor]]]
 
 DATASETS = ('drop', 'duorc', 'narrativeqa', 'newsqa', 'quoref', 'ropes', 'squad', 'squad2')
-datasetSizes = {'drop': 77394, 'newsqa': 92543, 'squad2': 130310, 'quoref': 19392, 'ropes': 10302, 'narrativeqa': 32717, 'squad': 87596, 'duorc': 54746} # Approximate
-devsetSizes = {'drop': 9530, 'duorc': 12224, 'narrativeqa': 3393, 'newsqa': 5154, 'quoref': 2407, 'ropes': 1194, 'squad': 10570, 'squad2': 11864}
+datasetSizes = {'drop': 77394, 'newsqa': 92543, 'squad2': 130310, 'quoref': 19392, 'ropes': 10924, 'narrativeqa': 32717, 'squad': 87596, 'duorc': 54746} # Approximate
+reducedSizes = {'drop': 69990, 'newsqa': 61658, 'squad2': 115168, 'quoref': 17600, 'ropes': 10565, 'narrativeqa': 24336, 'squad': 69005, 'duorc': 35315}
+devsetSizes = {'drop': 9530, 'duorc': 12224, 'narrativeqa': 3393, 'newsqa': 5154, 'quoref': 2407, 'ropes': 1688, 'squad': 10570, 'squad2': 11864}
 
 idealDevLosses = {'drop': 1311376.45, 'newsqa': 3287434.204, 'squad2': 850474.152, 'quoref': 872098.558, 'ropes': 130333.73, 'narrativeqa': 2505894.0, 'squad': 1993947.91, 'duorc': 3664924.6}
 
@@ -145,17 +146,34 @@ class DynamicIterator(BasicIterator):
             print('\n')
         tot = sum(sample_probs)
         sample_probs = [p/tot for p in sample_probs]
-        for step in range(self._instances_per_epoch):
-            datasetIndex = np.random.choice(len(sample_probs), p=sample_probs)
-            datasetChosen = datasetNames[datasetIndex]
-            if step % 3000 == 0:
-                print('Step: ', step)
-                print('%s Sampling Numbers: %s' % (sampling_method, datasetNumbers))
-            datasetNumbers[datasetChosen] = datasetNumbers.get(datasetChosen, 0) + 1
-            inst = next(self.train_iterators[datasetChosen])
-            assert inst is not None
-            assert isinstance(inst, Instance)
-            new_instances.append(inst)
+        if scheduling == 'rr':
+            datasetChosen = datasetNames[self.roundRobinIndex]
+            for step in reducedSizes[datasetChosen]:
+                if step % 3000 == 0:
+                    print('Step: ', step)
+                    print('Round Robin Numbers: %s' % datasetNumbers)
+                datasetNumbers[datasetChosen] = datasetNumbers.get(datasetChosen, 0) + 1
+                inst = next(self.train_iterators[datasetChosen])
+                assert inst is not None
+                assert isinstance(inst, Instance)
+                new_instances.append(inst)
+            self.roundRobinIndex += 1
+            self.roundRobinIndex %= len(datasetNames)
+        else:
+            assert scheduling in ('mixed_unmixed', 'mixed_mixed')
+            datasetChosen = None
+            for step in range(self._instances_per_epoch):
+                if scheduling == 'mixed_mixed' or (step % self._batch_size == 0):
+                    datasetIndex = np.random.choice(len(sample_probs), p=sample_probs)
+                    datasetChosen = datasetNames[datasetIndex]
+                if step % 3000 == 0:
+                    print('Step: ', step)
+                    print('%s Sampling Numbers: %s' % (sampling_method, datasetNumbers))
+                datasetNumbers[datasetChosen] = datasetNumbers.get(datasetChosen, 0) + 1
+                inst = next(self.train_iterators[datasetChosen])
+                assert inst is not None
+                assert isinstance(inst, Instance)
+                new_instances.append(inst)
         print('Final %s Sampling Numbers: %s' % (sampling_method, datasetNumbers))
         assert len(datasetNumbers) == len(DATASETS)
         ########
