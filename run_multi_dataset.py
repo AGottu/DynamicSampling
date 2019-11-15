@@ -9,7 +9,7 @@ from allennlp.commands import main
 #'''
 assert len(sys.argv) == 4
 # Use overrides to train on CPU.
-dynamic = sys.argv[1] == 'dynamic'
+dynamic = '-' in sys.argv[1] #sys.argv[1] == 'dynamic'
 instancesPerEpoch = 50000 if dynamic else None
 iteratorType = 'dynamic' if dynamic else 'basic'
 valIteratorType = 'multi' if dynamic else 'basic'
