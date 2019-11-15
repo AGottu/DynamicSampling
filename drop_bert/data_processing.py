@@ -114,6 +114,9 @@ class BertDropReader(DatasetReader):
 
         self.trainIterators = dict()
         self.devIterators = dict()
+        self.sampling_method = None
+        self.scheduling = None
+        self.dynamic_metric = None
 
     def dataset_iterator(self, single_file_path_cached, dataset):
         jsonl = open(single_file_path_cached, 'r')
@@ -225,7 +228,17 @@ class BertDropReader(DatasetReader):
             for datasetName, curr_iterator in iterators.items():
                 yield from curr_iterator
         else:
-            assert self.allowed_datasets == 'dynamic'
+            experiment_list = self.allowed_datasets.split('-')
+            assert len(experiment_list) == 3
+            sampling_method = experiment_list[0]
+            scheduling = experiment_list[1]
+            dynamic_metric = experiment_list[2]
+            assert sampling_method in ('dynamic', 'uniform', 'size')
+            assert scheduling in ('rr', 'mixed_unmixed', 'mixed_mixed')
+            assert dynamic_metric in ('em', 'f1', 'em+f1', 'loss')
+            self.sampling_method = sampling_method
+            self.scheduling = scheduling
+            self.dynamic_metric = dynamic_metric
             inst = self.text_to_instance('', '', [], [], [], [], [], skipEmpty=False)
             yield inst
         
@@ -297,6 +310,10 @@ class BertDropReader(DatasetReader):
                     "iterators": self.trainIterators if self.trainDev == 'train' else self.devIterators,
                     "trainDev": self.trainDev}
         
+        if self.sampling_method is not None:
+            metadata['sampling_method'] = self.sampling_method
+            metadata['scheduling'] = self.scheduling
+            metadata['dynamic_metric'] = self.dynamic_metric
         
         if answer_annotations:
             for annotation in answer_annotations:
