@@ -28,7 +28,7 @@ TensorDict = Dict[str, Union[torch.Tensor, Dict[str, torch.Tensor]]]
 DATASETS = ('drop', 'duorc', 'narrativeqa', 'newsqa', 'quoref', 'ropes', 'squad', 'squad2')
 datasetSizes = {'drop': 77394, 'newsqa': 92543, 'squad2': 130310, 'quoref': 19392, 'ropes': 10302, 'narrativeqa': 32717, 'squad': 87596, 'duorc': 54746} # Approximate
 devsetSizes = {'drop': 9530, 'duorc': 12224, 'narrativeqa': 3393, 'newsqa': 5154, 'quoref': 2407, 'ropes': 1194, 'squad': 10570, 'squad2': 11864}
-idealDevLosses = {'drop': 1311376.45, 'newsqa': 3287434.267, 'squad2': 850474.152, 'quoref': 872098.2, 'ropes': 585288.3, 'narrativeqa': 2505892.7521, 'squad': 1133777.1, 'duorc': 3664924.6}
+idealDevLosses = {'drop': 1311376.45, 'newsqa': 3287434.267, 'squad2': 850474.152, 'quoref': 872098.2, 'ropes': 130333.73, 'narrativeqa': 2505892.7521, 'squad': 1133777.1, 'duorc': 3664924.6}
 
 idealDevEM = {'drop': 0.53872, 'newsqa': 0.3498, 'squad2': 0.66015, 'quoref': 0.5089, 'ropes': 0.67535545, 'narrativeqa': 0.30622, 'squad': 0.56934721, 'duorc': 0.2325}
 idealDevF1 = {'drop': 0.572664, 'newsqa': 0.49783, 'squad2': 0.696, 'quoref': 0.558924, 'ropes': 0.72106, 'narrativeqa': 0.43874, 'squad': 0.72834248, 'duorc': 0.30805}
@@ -85,6 +85,14 @@ class DynamicIterator(BasicIterator):
         if self.train_iterators is None:
             self.train_iterators = {key:cycle(value) for (key,value) in iterators.items()} # Cycle for training iterators since we're sampling
         metrics = inst.fields["metadata"].metadata["val_metrics"]
+        
+        sampling_method = inst.fields["metadata"].metadata["sampling_method"]
+        scheduling = inst.fields["metadata"].metadata["scheduling"]
+        dynamic_metric = inst.fields["metadata"].metadata["dynamic_metric"]
+        print('Sampling Method: ', sampling_method)
+        print('Scheduling: ', scheduling)
+        print('Metric: ', dynamic_metric)
+        
         new_instances = []
         ########
         datasetNames = []
@@ -93,11 +101,16 @@ class DynamicIterator(BasicIterator):
         EMGaps = dict()
         F1Gaps = dict()
         datasetNumbers = dict()
-        if metrics is None:
+        if metrics is None or sampling_method == 'size':
             for datasetName, size in datasetSizes.items():
                 datasetNames.append(datasetName)
                 sample_probs.append(size)
+        elif sampling_method == 'uniform':
+            for datasetName, size in datasetSizes.items():
+                datasetNames.append(datasetName)
+                sample_probs.append(1.0 / len(datasetSizes))
         else:
+            assert sampling_method == 'dynamic'
             for datasetName, dev_metrics in metrics.items():
                 dev_loss = dev_metrics['loss']
                 dev_em = dev_metrics['em']
@@ -112,8 +125,16 @@ class DynamicIterator(BasicIterator):
                 EMGaps[datasetName] = em_gap
                 F1Gaps[datasetName] = f1_gap
                 datasetNames.append(datasetName)
-                sample_probs.append(em_gap + f1_gap)#(loss_gap)
-            #print('Loss Gaps: ', lossGaps)
+                if dynamic_metric == 'em':
+                    sample_probs.append(em_gap)
+                elif dynamic_metric == 'f1':
+                    sample_probs.append(f1_gap)
+                elif dynamic_metric == 'em+f1':
+                    sample_probs.append(em_gap + f1_gap)
+                else:
+                    assert dynamic_metric == 'loss' 
+                    sample_probs.append(loss_gap)
+            print('Loss Gaps: ', lossGaps)
             print('EM Gaps: ', EMGaps)
             print('F1 Gaps: ', F1Gaps)
             print('\n')
@@ -128,13 +149,13 @@ class DynamicIterator(BasicIterator):
             datasetChosen = datasetNames[datasetIndex]
             if step % 3000 == 0:
                 print('Step: ', step)
-                print('%s Sampling Numbers: %s' % ('Size' if metrics is None else 'Dynamic', datasetNumbers))
+                print('%s Sampling Numbers: %s' % (sampling_method, datasetNumbers))
             datasetNumbers[datasetChosen] = datasetNumbers.get(datasetChosen, 0) + 1
             inst = next(self.train_iterators[datasetChosen])
             assert inst is not None
             assert isinstance(inst, Instance)
             new_instances.append(inst)
-        print('Final %s Sampling Numbers: %s' % ('Size' if metrics is None else 'Dynamic', datasetNumbers))
+        print('Final %s Sampling Numbers: %s' % (sampling_method, datasetNumbers))
         assert len(datasetNumbers) == len(DATASETS)
         ########
         
