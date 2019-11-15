@@ -28,10 +28,11 @@ TensorDict = Dict[str, Union[torch.Tensor, Dict[str, torch.Tensor]]]
 DATASETS = ('drop', 'duorc', 'narrativeqa', 'newsqa', 'quoref', 'ropes', 'squad', 'squad2')
 datasetSizes = {'drop': 77394, 'newsqa': 92543, 'squad2': 130310, 'quoref': 19392, 'ropes': 10302, 'narrativeqa': 32717, 'squad': 87596, 'duorc': 54746} # Approximate
 devsetSizes = {'drop': 9530, 'duorc': 12224, 'narrativeqa': 3393, 'newsqa': 5154, 'quoref': 2407, 'ropes': 1194, 'squad': 10570, 'squad2': 11864}
-idealDevLosses = {'drop': 1311376.45, 'newsqa': 3287434.267, 'squad2': 850474.152, 'quoref': 872098.2, 'ropes': 130333.73, 'narrativeqa': 2505892.7521, 'squad': 1133777.1, 'duorc': 3664924.6}
 
-idealDevEM = {'drop': 0.53872, 'newsqa': 0.3498, 'squad2': 0.66015, 'quoref': 0.5089, 'ropes': 0.67535545, 'narrativeqa': 0.30622, 'squad': 0.56934721, 'duorc': 0.2325}
-idealDevF1 = {'drop': 0.572664, 'newsqa': 0.49783, 'squad2': 0.696, 'quoref': 0.558924, 'ropes': 0.72106, 'narrativeqa': 0.43874, 'squad': 0.72834248, 'duorc': 0.30805}
+idealDevLosses = {'drop': 1311376.45, 'newsqa': 3287434.204, 'squad2': 850474.152, 'quoref': 872098.558, 'ropes': 130333.73, 'narrativeqa': 2505894.0, 'squad': 1993947.91, 'duorc': 3664924.6}
+
+idealDevEM = {'drop': 0.53872, 'newsqa': 0.3498, 'squad2': 0.66015, 'quoref': 0.522227, 'ropes': 0.67535545, 'narrativeqa': 0.31506, 'squad': 0.56934721, 'duorc': 0.2325}
+idealDevF1 = {'drop': 0.572664, 'newsqa': 0.49783, 'squad2': 0.696, 'quoref': 0.5755, 'ropes': 0.72106, 'narrativeqa': 0.4428, 'squad': 0.72834248, 'duorc': 0.30805}
 #idealDevEM = {'drop': 0.5341, 'newsqa': 0.346527, 'squad2': 0.6481, 'quoref': 0.53012, 'ropes': 0.51088777, 'narrativeqa': 0.308576481, 'squad': 0.5666, 'duorc': 0.2307}
 #idealDevF1 = {'drop': 0.5689, 'newsqa': 0.4862534, 'squad2': 0.6825, 'quoref': 0.586261, 'ropes': 0.5875, 'narrativeqa': 0.4377, 'squad': 0.72442668, 'duorc': 0.3078575}
 
