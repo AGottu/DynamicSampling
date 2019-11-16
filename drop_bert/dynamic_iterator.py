@@ -38,23 +38,6 @@ idealDevF1 = {'drop': 0.58, 'newsqa': 0.49783, 'squad2': 0.6766, 'quoref': 0.578
 #idealDevEM = {'drop': 0.5341, 'newsqa': 0.346527, 'squad2': 0.6481, 'quoref': 0.53012, 'ropes': 0.51088777, 'narrativeqa': 0.308576481, 'squad': 0.5666, 'duorc': 0.2307}
 #idealDevF1 = {'drop': 0.5689, 'newsqa': 0.4862534, 'squad2': 0.6825, 'quoref': 0.586261, 'ropes': 0.5875, 'narrativeqa': 0.4377, 'squad': 0.72442668, 'duorc': 0.3078575}
 
-def cumulativeMetrics(metrics):
-    cumulativeEM = 0.0
-    cumulativeF1 = 0.0
-    cumulativeSize = 0
-    for datasetName, dev_metrics in metrics.items():
-        dev_loss = dev_metrics['loss']
-        dev_em = dev_metrics['em']
-        dev_f1 = dev_metrics['f1']
-        dev_size = devsetSizes[datasetName]
-        cumulativeEM += (dev_em * dev_size)
-        cumulativeF1 += (dev_f1 * dev_size)
-        cumulativeSize += dev_size
-    cumulativeEM /= cumulativeSize
-    cumulativeF1 /= cumulativeSize
-    print('Cumulative EM: ', cumulativeEM)
-    print('Cumulative F1: ', cumulativeF1)
-
 @DataIterator.register("dynamic")
 class DynamicIterator(BasicIterator):
     """
@@ -72,6 +55,39 @@ class DynamicIterator(BasicIterator):
         super().__init__(batch_size, instances_per_epoch, max_instances_in_memory, cache_instances, track_epoch, maximum_samples_per_batch)
         self.train_iterators = None
         self.roundRobinIndex = 0
+        self.epoch = 0
+        self.bestEM = 0.0
+        self.bestF1 = 0.0
+        self.output_dir = None
+        
+    def cumulativeMetrics(self, metrics):
+        cumulativeEM = 0.0
+        cumulativeF1 = 0.0
+        cumulativeSize = 0
+        for datasetName, dev_metrics in metrics.items():
+            dev_loss = dev_metrics['loss']
+            dev_em = dev_metrics['em']
+            dev_f1 = dev_metrics['f1']
+            dev_size = devsetSizes[datasetName]
+            cumulativeEM += (dev_em * dev_size)
+            cumulativeF1 += (dev_f1 * dev_size)
+            cumulativeSize += dev_size
+        cumulativeEM /= cumulativeSize
+        cumulativeF1 /= cumulativeSize
+        print('Cumulative EM: ', cumulativeEM)
+        print('Cumulative F1: ', cumulativeF1)
+        self.bestEM = max(self.bestEM, cumulativeEM)
+        self.bestF1 = max(self.bestF1, cumulativeF1)
+        if self.epoch == 0 and os.path.isfile(self.output_dir):
+            os.remove(self.output_dir)
+        with open(self.output_dir, 'a+') as f:
+            f.write('Finished epoch %d' % self.epoch)
+            f.write('Cumulative EM: %s' % cumulativeEM)
+            f.write('Cumulative F1: %s' % cumulativeF1)
+            f.write('Best EM: %s' % self.bestEM)
+            f.write('Best F1: %s' % self.bestF1)
+            f.write('\n\n')
+        self.epoch += 1
 
     @overrides
     def __call__(
@@ -96,6 +112,7 @@ class DynamicIterator(BasicIterator):
         print('Sampling Method: ', sampling_method)
         print('Scheduling: ', scheduling)
         print('Metric: ', dynamic_metric)
+        self.output_dir = '/agottumu/%s-%s-%s.txt' % (sampling_method, scheduling, dynamic_metric)
         
         new_instances = []
         ########
@@ -145,7 +162,7 @@ class DynamicIterator(BasicIterator):
         if metrics is not None:
             print(metrics)
             print('\n')
-            cumulativeMetrics(metrics)
+            self.cumulativeMetrics(metrics)
             print('\n')
         tot = sum(sample_probs)
         sample_probs = [p/tot for p in sample_probs]
