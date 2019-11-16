@@ -1,3 +1,4 @@
+import os
 import logging
 from overrides import overrides
 from collections import deque
@@ -59,6 +60,8 @@ class DynamicIterator(BasicIterator):
         self.bestEM = 0.0
         self.bestF1 = 0.0
         self.output_dir = None
+        if not os.path.exists('/agottumu/experiments'):
+            os.mkdir('/agottumu/experiments')
         
     def cumulativeMetrics(self, metrics):
         cumulativeEM = 0.0
@@ -112,7 +115,7 @@ class DynamicIterator(BasicIterator):
         print('Sampling Method: ', sampling_method)
         print('Scheduling: ', scheduling)
         print('Metric: ', dynamic_metric)
-        self.output_dir = '/agottumu/%s-%s-%s.txt' % (sampling_method, scheduling, dynamic_metric)
+        self.output_dir = '/agottumu/experiments/%s-%s-%s.txt' % (sampling_method, scheduling, dynamic_metric)
         
         new_instances = []
         ########
