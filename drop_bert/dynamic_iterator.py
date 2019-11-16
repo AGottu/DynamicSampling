@@ -198,7 +198,7 @@ class DynamicIterator(BasicIterator):
                 assert isinstance(inst, Instance)
                 new_instances.append(inst)
         print('Final %s Sampling Numbers: %s' % (sampling_method, datasetNumbers))
-        assert len(datasetNumbers) == len(DATASETS)
+        #assert len(datasetNumbers) == len(DATASETS)
         ########
         
         ### Ananth ###
