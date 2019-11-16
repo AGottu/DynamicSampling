@@ -171,7 +171,7 @@ class DynamicIterator(BasicIterator):
         sample_probs = [p/tot for p in sample_probs]
         if scheduling == 'rr':
             datasetChosen = datasetNames[self.roundRobinIndex]
-            for step in reducedSizes[datasetChosen]:
+            for step in range(reducedSizes[datasetChosen]):
                 if step % 3000 == 0:
                     print('Step: ', step)
                     print('Round Robin Numbers: %s' % datasetNumbers)
