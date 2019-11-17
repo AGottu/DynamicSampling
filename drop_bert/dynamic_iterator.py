@@ -172,15 +172,18 @@ class DynamicIterator(BasicIterator):
             
         if scheduling == 'rr':
             datasetChosen = datasetNames[self.roundRobinIndex]
+            numSteps = reducedSizes[datasetChosen]
         else:
             datasetChosen = None
-        for step in range(self._instances_per_epoch):
+            numSteps = self._instances_per_epoch
+            
+        for step in range(numSteps):
             if scheduling == 'mixed_mixed' or (scheduling == 'mixed_unmixed' and step % self._batch_size == 0):
                 datasetIndex = np.random.choice(len(sample_probs), p=sample_probs)
                 datasetChosen = datasetNames[datasetIndex]
                 
             #### TEMPORARY CODE, REMOVE LATER ####
-            if self.epoch <= 15:
+            if self.epoch < 3:
                 datasetChosen = 'ropes'
             #### TEMPORARY CODE, REMOVE LATER ####
                 
