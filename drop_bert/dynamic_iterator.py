@@ -183,7 +183,7 @@ class DynamicIterator(BasicIterator):
                 datasetChosen = datasetNames[datasetIndex]
                 
             #### TEMPORARY CODE, REMOVE LATER ####
-            if self.epoch < 3:
+            if self.epoch < 5 and random.uniform(0,1) < 0.5:
                 datasetChosen = 'ropes'
             #### TEMPORARY CODE, REMOVE LATER ####
                 
