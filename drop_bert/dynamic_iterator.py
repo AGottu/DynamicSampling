@@ -169,36 +169,33 @@ class DynamicIterator(BasicIterator):
             print('\n')
         tot = sum(sample_probs)
         sample_probs = [p/tot for p in sample_probs]
+            
         if scheduling == 'rr':
             datasetChosen = datasetNames[self.roundRobinIndex]
-            for step in range(reducedSizes[datasetChosen]):
-                if step % 3000 == 0:
-                    print('Step: ', step)
-                    print('Round Robin Numbers: %s' % datasetNumbers)
-                datasetNumbers[datasetChosen] = datasetNumbers.get(datasetChosen, 0) + 1
-                inst = next(self.train_iterators[datasetChosen])
-                assert inst is not None
-                assert isinstance(inst, Instance)
-                new_instances.append(inst)
-            self.roundRobinIndex += 1
-            self.roundRobinIndex %= len(datasetNames)
         else:
-            assert scheduling in ('mixed_unmixed', 'mixed_mixed')
             datasetChosen = None
-            for step in range(self._instances_per_epoch):
-                if scheduling == 'mixed_mixed' or (step % self._batch_size == 0):
-                    datasetIndex = np.random.choice(len(sample_probs), p=sample_probs)
-                    datasetChosen = datasetNames[datasetIndex]
-                if step % 3000 == 0:
-                    print('Step: ', step)
-                    print('%s Sampling Numbers: %s' % (sampling_method, datasetNumbers))
-                datasetNumbers[datasetChosen] = datasetNumbers.get(datasetChosen, 0) + 1
-                inst = next(self.train_iterators[datasetChosen])
-                assert inst is not None
-                assert isinstance(inst, Instance)
-                new_instances.append(inst)
+        for step in range(self._instances_per_epoch):
+            if scheduling == 'mixed_mixed' or (scheduling == 'mixed_unmixed' and step % self._batch_size == 0):
+                datasetIndex = np.random.choice(len(sample_probs), p=sample_probs)
+                datasetChosen = datasetNames[datasetIndex]
+                
+            #### TEMPORARY CODE, REMOVE LATER ####
+            if self.epoch <= 15:
+                datasetChosen = 'ropes'
+            #### TEMPORARY CODE, REMOVE LATER ####
+                
+            if step % 3000 == 0:
+                print('Step: ', step)
+                print('%s Sampling Numbers: %s' % (sampling_method, datasetNumbers))
+            datasetNumbers[datasetChosen] = datasetNumbers.get(datasetChosen, 0) + 1
+            inst = next(self.train_iterators[datasetChosen])
+            assert inst is not None
+            assert isinstance(inst, Instance)
+            new_instances.append(inst)
+        self.roundRobinIndex += 1
+        self.roundRobinIndex %= len(datasetNames)
+                
         print('Final %s Sampling Numbers: %s' % (sampling_method, datasetNumbers))
-        #assert len(datasetNumbers) == len(DATASETS)
         ########
         
         ### Ananth ###
