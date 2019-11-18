@@ -406,8 +406,12 @@ class NumericallyAugmentedBERT(Model):
                     output_dict["answer"].append(answer_json)
                     answer_annotations = metadata[i].get('answer_annotations', [])
                     
-                    #print('Actual Answer: ', answer_annotations)
-                    #print('Predicted Answer: ', answer_json)
+                    #'''
+                    with open('/agottumu/results/predictions.txt', 'a+') as f:
+                        f.write('Actual Answer: %s\n' % answer_annotations)
+                        f.write('Predicted Answer: %s\n' % answer_json)
+                        f.write('\n')
+                    #'''
                     if answer_annotations:
                        self._drop_metrics(answer_json["value"], answer_annotations)
 
