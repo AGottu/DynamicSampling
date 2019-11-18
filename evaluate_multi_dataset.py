@@ -16,19 +16,29 @@ weights_file = '/agottumu/ropes/best.th' #'/agottumu/dynamic/model_state_epoch_1
 command = sys.argv[4]
 
 # Assemble the command into sys.argv
-sys.argv = [
-    "allennlp",  # command name, not used by main
-    command,
-    archive_file,
-    input_file,
-    "--output-file", output_file,
-    "--cuda-device", 0,
-    "--include-package", "drop_bert",
-    "-o", overrides,
-    "--weights-file", weights_file
-]
 if command == 'predict':
-    sys.argv.append('--predictor')
-    sys.argv.append('machine-comprehension')
-
+    sys.argv = [
+        "allennlp",  # command name, not used by main
+        command,
+        archive_file,
+        input_file,
+        "--output-file", output_file,
+        "--cuda-device", 0,
+        "--include-package", "drop_bert",
+        "-o", overrides,
+        "--weights-file", weights_file,
+        "--predictor", 'machine-comprehension'
+    ]
+else:
+    sys.argv = [
+        "allennlp",  # command name, not used by main
+        command,
+        archive_file,
+        input_file,
+        "--output-file", output_file,
+        "--cuda-device", 0,
+        "--include-package", "drop_bert",
+        "-o", overrides,
+        "--weights-file", weights_file
+    ]
 main()
