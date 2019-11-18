@@ -44,4 +44,5 @@ else:
         "-o", overrides,
         "--weights-file", weights_file
     ]
-main()
+if dataset == 'ropes':
+    main()
