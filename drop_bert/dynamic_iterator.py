@@ -84,11 +84,12 @@ class DynamicIterator(BasicIterator):
         if self.epoch == 0 and os.path.isfile(self.output_dir):
             os.remove(self.output_dir)
         with open(self.output_dir, 'a+') as f:
-            f.write('Finished epoch %d' % self.epoch)
-            f.write('Cumulative EM: %s' % cumulativeEM)
-            f.write('Cumulative F1: %s' % cumulativeF1)
-            f.write('Best EM: %s' % self.bestEM)
-            f.write('Best F1: %s' % self.bestF1)
+            f.write('Finished epoch %d\n' % self.epoch)
+            f.write('Cumulative EM: %s\n' % cumulativeEM)
+            f.write('Cumulative F1: %s\n' % cumulativeF1)
+            f.write('Best EM: %s\n' % self.bestEM)
+            f.write('Best F1: %s\n' % self.bestF1)
+            f.write('%s\n' % metrics)
             f.write('\n\n')
         self.epoch += 1
 
@@ -182,10 +183,10 @@ class DynamicIterator(BasicIterator):
                 datasetIndex = np.random.choice(len(sample_probs), p=sample_probs)
                 datasetChosen = datasetNames[datasetIndex]
                 
-            #### TEMPORARY CODE, REMOVE LATER ####
+            '''#### TEMPORARY CODE, REMOVE LATER ####
             if self.epoch < 5 and random.uniform(0,1) < 0.5:
                 datasetChosen = 'ropes'
-            #### TEMPORARY CODE, REMOVE LATER ####
+            '''#### TEMPORARY CODE, REMOVE LATER ####
                 
             if step % 3000 == 0:
                 print('Step: ', step)
