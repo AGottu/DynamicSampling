@@ -11,13 +11,14 @@ overrides = json.dumps({"dataset_reader": {"lazy": True, "allowed_datasets": dat
 
 archive_file = sys.argv[2]
 input_file = '%s/data/all_datasets/dev' % os.getcwd()
-output_file = '%s/%s.json' % (sys.argv[3], dataset)
-weights_file = '/agottumu/dynamic/model_state_epoch_12.th'
+output_file = '%s/%s_%s.json' % (sys.argv[3], dataset, sys.argv[4])
+weights_file = '/agottumu/ropes/best.th' #'/agottumu/dynamic/model_state_epoch_12.th'
+command = sys.argv[4]
 
 # Assemble the command into sys.argv
 sys.argv = [
     "allennlp",  # command name, not used by main
-    "evaluate",
+    command,
     archive_file,
     input_file,
     "--output-file", output_file,
