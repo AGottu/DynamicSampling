@@ -78,7 +78,8 @@ class BertDropReader(DatasetReader):
                  max_depth: int = 3,
                  extra_numbers: List[float] = [],
                  allowed_datasets: str = 'all',
-                 instances_per_epoch: int = 70000):
+                 instances_per_epoch: int = 70000,
+                 numEpochs: int = 20):
         super(BertDropReader, self).__init__(lazy)
         self.tokenizer = tokenizer
         self.token_indexers = token_indexers
