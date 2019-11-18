@@ -27,5 +27,8 @@ sys.argv = [
     "-o", overrides,
     "--weights-file", weights_file
 ]
+if command == 'predict':
+    sys.argv.append('--predictor')
+    sys.argv.append('machine-comprehension')
 
 main()
