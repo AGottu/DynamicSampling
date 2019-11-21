@@ -176,7 +176,7 @@ class DynamicIterator(BasicIterator):
         for i in range(numCycles):
             if scheduling == 'rr':
                 datasetChosen = datasetNames[self.roundRobinIndex]
-                numSteps = reducedSizes[datasetChosen] / 10
+                numSteps = int(reducedSizes[datasetChosen] / 10)
             else:
                 datasetChosen = None
                 numSteps = self._instances_per_epoch
