@@ -175,11 +175,11 @@ class DynamicIterator(BasicIterator):
         step = 0
         for i in range(numCycles):
             if scheduling == 'rr':
-                numSteps = reducedSizes[datasetChosen] / 10
                 datasetChosen = datasetNames[self.roundRobinIndex]
+                numSteps = reducedSizes[datasetChosen] / 10
             else:
-                numSteps = self._instances_per_epoch
                 datasetChosen = None
+                numSteps = self._instances_per_epoch
             for j in range(numSteps):
                 if scheduling == 'mixed_mixed' or (scheduling == 'mixed_unmixed' and step % self._batch_size == 0):
                     datasetIndex = np.random.choice(len(sample_probs), p=sample_probs)
