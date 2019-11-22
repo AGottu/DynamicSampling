@@ -226,7 +226,7 @@ class BertDropReader(DatasetReader):
             sampling_method = experiment_list[0]
             scheduling = experiment_list[1]
             dynamic_metric = experiment_list[2]
-            assert sampling_method in ('dynamic', 'uniform', 'size')
+            assert sampling_method in ('dynamic', 'uniform', 'size', 'uniform_size')
             assert scheduling in ('rr', 'mixed_unmixed', 'mixed_mixed')
             assert dynamic_metric in ('em', 'f1', 'em+f1', 'loss')
             self.sampling_method = sampling_method
