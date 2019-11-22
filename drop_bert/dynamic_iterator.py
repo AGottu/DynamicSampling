@@ -114,6 +114,10 @@ class DynamicIterator(BasicIterator):
         sampling_method = inst.fields["metadata"].metadata["sampling_method"]
         scheduling = inst.fields["metadata"].metadata["scheduling"]
         dynamic_metric = inst.fields["metadata"].metadata["dynamic_metric"]
+        epoch = inst.fields["metadata"].metadata["epoch"]
+        total_epochs = inst.fields["metadata"].metadata["total_epochs"]
+        print('Epoch: ', epoch)
+        print('Total Epochs: ', total_epochs)
         print('Sampling Method: ', sampling_method)
         print('Scheduling: ', scheduling)
         print('Metric: ', dynamic_metric)
@@ -127,11 +131,11 @@ class DynamicIterator(BasicIterator):
         EMGaps = dict()
         F1Gaps = dict()
         datasetNumbers = dict()
-        if (metrics is None and sampling_method == 'dynamic') or sampling_method == 'size':
+        if (metrics is None and sampling_method == 'dynamic') or sampling_method == 'size' or (sampling_method == 'uniform_size' and epoch > int(total_epochs / 2)):
             for datasetName, size in datasetSizes.items():
                 datasetNames.append(datasetName)
                 sample_probs.append(size)
-        elif sampling_method == 'uniform':
+        elif sampling_method == 'uniform' or (sampling_method == 'uniform_size' and epoch <= int(total_epochs / 2)):
             for datasetName, size in datasetSizes.items():
                 datasetNames.append(datasetName)
                 sample_probs.append(1.0 / len(datasetSizes))
