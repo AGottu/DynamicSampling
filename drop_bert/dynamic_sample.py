@@ -61,6 +61,7 @@ class DynamicTrainer(Trainer):
         assert len(self.train_data) == 1
         self.train_data[0].fields["metadata"].metadata["val_metrics"] = val_metrics
         self.train_data[0].fields["metadata"].metadata["epoch"] = epoch
+        self.train_data[0].fields["metadata"].metadata["total_epochs"] = self._num_epochs
         return super()._train_epoch(epoch)
 
     # Requires custom from_params.
