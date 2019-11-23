@@ -33,7 +33,7 @@ devsetSizes = {'drop': 9530, 'duorc': 12224, 'narrativeqa': 3393, 'newsqa': 5154
 
 idealDevLosses = {'drop': 1311375.6, 'newsqa': 3287434.3085, 'squad2': 850474.5231, 'quoref': 872099.2, 'ropes': 130333.73, 'narrativeqa': 2505894.0, 'squad': 1993947.91, 'duorc': 3664924.6}
 
-idealDevEM = {'drop': 0.54407, 'newsqa': 0.3533, 'squad2': 0.641436, 'quoref': 0.525135, 'ropes': 0.45, 'narrativeqa': 0.31506, 'squad': 0.574456, 'duorc': 0.2325}
+idealDevEM = {'drop': 0.54407, 'newsqa': 0.3533, 'squad2': 0.641436, 'quoref': 0.525135, 'ropes': 0.4, 'narrativeqa': 0.31506, 'squad': 0.574456, 'duorc': 0.2325}
 idealDevF1 = {'drop': 0.58, 'newsqa': 0.49783, 'squad2': 0.6766, 'quoref': 0.5781, 'ropes': 0.45, 'narrativeqa': 0.4428, 'squad': 0.7351353, 'duorc': 0.30805}
 # Squad 2 Old: 0.66015, 0.696
 # Ropes New: 0.67535545, 0.72106
@@ -142,6 +142,7 @@ class DynamicIterator(BasicIterator):
         else:
             assert sampling_method == 'dynamic'
             for datasetName, dev_metrics in metrics.items():
+                trainSize = datasetSizes[datasetName]
                 dev_loss = dev_metrics['loss']
                 dev_em = dev_metrics['em']
                 dev_f1 = dev_metrics['f1']
@@ -160,7 +161,8 @@ class DynamicIterator(BasicIterator):
                 elif dynamic_metric == 'f1':
                     sample_probs.append(f1_gap)
                 elif dynamic_metric == 'em+f1':
-                    sample_probs.append(em_gap + f1_gap)
+                    #sample_probs.append(em_gap + f1_gap)
+                    sample_probs.append((em_gap + f1_gap) * trainSize)
                 else:
                     assert dynamic_metric == 'loss' 
                     sample_probs.append(loss_gap)
