@@ -116,7 +116,7 @@ class DynamicIterator(BasicIterator):
             else:
                 self._instances_per_epoch = 0
                 
-        print('Avg. EM + F1 Gap: ', gap)
+            print('Avg. EM + F1 Gap: ', gap)
 
     @overrides
     def __call__(
