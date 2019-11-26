@@ -39,6 +39,8 @@ idealDevF1 = {'drop': 0.58, 'newsqa': 0.49783, 'squad2': 0.6766, 'quoref': 0.578
 # Ropes New: 0.67535545, 0.72106
 #idealDevEM = {'drop': 0.5341, 'newsqa': 0.346527, 'squad2': 0.6481, 'quoref': 0.53012, 'ropes': 0.51088777, 'narrativeqa': 0.308576481, 'squad': 0.5666, 'duorc': 0.2307}
 #idealDevF1 = {'drop': 0.5689, 'newsqa': 0.4862534, 'squad2': 0.6825, 'quoref': 0.586261, 'ropes': 0.5875, 'narrativeqa': 0.4377, 'squad': 0.72442668, 'duorc': 0.3078575}
+IDEAL_EM = 0.47
+IDEAL_F1 = 0.56
 
 @DataIterator.register("dynamic")
 class DynamicIterator(BasicIterator):
@@ -63,6 +65,9 @@ class DynamicIterator(BasicIterator):
         self.output_dir = None
         if not os.path.exists('/agottumu/experiments'):
             os.mkdir('/agottumu/experiments')
+            
+        self.maxSamples = self._instances_per_epoch
+        self.dynamic = False
         
     def cumulativeMetrics(self, metrics):
         cumulativeEM = 0.0
@@ -93,6 +98,25 @@ class DynamicIterator(BasicIterator):
             f.write('%s\n' % metrics)
             f.write('\n\n')
         self.epoch += 1
+        
+        if self.dynamic:
+            gap = max(0.001, IDEAL_EM - cumulativeEM) + max(0.001, IDEAL_F1 - cumulativeF1)
+            if gap > 0.12:
+                self._instances_per_epoch = int(self.maxSamples)
+            elif gap <= 0.12 and gap > 0.08:
+                self._instances_per_epoch = int(self.maxSamples / 5)
+            elif gap <= 0.08 and gap > 0.05:
+                self._instances_per_epoch = int(self.maxSamples / 10)
+            elif gap <= 0.05 and gap > 0.04:
+                self._instances_per_epoch = int(self.maxSamples / 20)
+            elif gap <= 0.04 and gap > 0.02:
+                self._instances_per_epoch = int(self.maxSamples / 50)
+            elif gap <= 0.02 and gap > 0.01:
+                self._instances_per_epoch = int(self.maxSamples / 100)
+            else:
+                self._instances_per_epoch = 0
+                
+        print('Avg. EM + F1 Gap: ', gap)
 
     @overrides
     def __call__(
@@ -141,6 +165,7 @@ class DynamicIterator(BasicIterator):
                 sample_probs.append(1.0 / len(datasetSizes))
         else:
             assert sampling_method == 'dynamic'
+            self.dynamic = True
             for datasetName, dev_metrics in metrics.items():
                 trainSize = datasetSizes[datasetName]
                 dev_loss = dev_metrics['loss']
