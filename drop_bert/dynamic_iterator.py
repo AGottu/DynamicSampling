@@ -78,11 +78,15 @@ class DynamicIterator(BasicIterator):
             dev_em = dev_metrics['em']
             dev_f1 = dev_metrics['f1']
             dev_size = devsetSizes[datasetName]
-            cumulativeEM += (dev_em * dev_size)
-            cumulativeF1 += (dev_f1 * dev_size)
+            #cumulativeEM += (dev_em * dev_size)
+            #cumulativeF1 += (dev_f1 * dev_size)
+            cumulativeEM += dev_em
+            cumulativeF1 += dev_f1
             cumulativeSize += dev_size
-        cumulativeEM /= cumulativeSize
-        cumulativeF1 /= cumulativeSize
+        #cumulativeEM /= cumulativeSize
+        #cumulativeF1 /= cumulativeSize
+        cumulativeEM /= len(DATASETS)
+        cumulativeF1 /= len(DATASETS)
         print('Cumulative EM: ', cumulativeEM)
         print('Cumulative F1: ', cumulativeF1)
         self.bestEM = max(self.bestEM, cumulativeEM)
@@ -100,6 +104,8 @@ class DynamicIterator(BasicIterator):
         self.epoch += 1
         
         if self.dynamic:
+            pass
+            '''
             gap = max(0.001, IDEAL_EM - cumulativeEM) + max(0.001, IDEAL_F1 - cumulativeF1)
             if gap > 0.12:
                 self._instances_per_epoch = int(self.maxSamples)
@@ -117,6 +123,7 @@ class DynamicIterator(BasicIterator):
                 self._instances_per_epoch = 0
                 
             print('Avg. EM + F1 Gap: ', gap)
+            '''
 
     @overrides
     def __call__(
