@@ -44,7 +44,7 @@ idealDevF1 = {'drop': 0.57, 'newsqa': 0.51, 'squad2': 0.7, 'quoref': 0.6, 'ropes
 #idealDevF1 = {'drop': 0.5689, 'newsqa': 0.4862534, 'squad2': 0.6825, 'quoref': 0.586261, 'ropes': 0.5875, 'narrativeqa': 0.4377, 'squad': 0.72442668, 'duorc': 0.3078575}
 IDEAL_EM = 0.47
 IDEAL_F1 = 0.56
-GAP_THRESHOLD = 0.03
+GAP_THRESHOLD = 0.0
 
 @DataIterator.register("dynamic")
 class DynamicIterator(BasicIterator):
