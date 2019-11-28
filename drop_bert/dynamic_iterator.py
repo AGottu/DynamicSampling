@@ -33,8 +33,8 @@ devsetSizes = {'drop': 9530, 'duorc': 12224, 'narrativeqa': 3393, 'newsqa': 5154
 
 idealDevLosses = {'drop': 1311375.6, 'newsqa': 3287434.3085, 'squad2': 850474.5231, 'quoref': 872099.2, 'ropes': 130333.73, 'narrativeqa': 2505894.0, 'squad': 1993947.91, 'duorc': 3664924.6}
 
-idealDevEM = {'drop': 0.53, 'newsqa': 0.36, 'squad2': 0.66, 'quoref': 0.55, 'ropes': 0.37, 'narrativeqa': 0.35, 'squad': 0.53, 'duorc': 0.24}
-idealDevF1 = {'drop': 0.57, 'newsqa': 0.51, 'squad2': 0.7, 'quoref': 0.6, 'ropes': 0.42, 'narrativeqa': 0.48, 'squad': 0.66, 'duorc': 0.32}
+idealDevEM = {'drop': 0.53, 'newsqa': 0.36, 'squad2': 0.66, 'quoref': 0.55, 'ropes': 0.37, 'narrativeqa': 0.35, 'squad': 0.55, 'duorc': 0.24}
+idealDevF1 = {'drop': 0.57, 'newsqa': 0.51, 'squad2': 0.7, 'quoref': 0.6, 'ropes': 0.42, 'narrativeqa': 0.48, 'squad': 0.7, 'duorc': 0.32}
 
 #idealDevEM = {'drop': 0.54407, 'newsqa': 0.3533, 'squad2': 0.641436, 'quoref': 0.525135, 'ropes': 0.4, 'narrativeqa': 0.31506, 'squad': 0.574456, 'duorc': 0.2325}
 #idealDevF1 = {'drop': 0.58, 'newsqa': 0.49783, 'squad2': 0.6766, 'quoref': 0.5781, 'ropes': 0.45, 'narrativeqa': 0.4428, 'squad': 0.7351353, 'duorc': 0.30805}
@@ -44,7 +44,7 @@ idealDevF1 = {'drop': 0.57, 'newsqa': 0.51, 'squad2': 0.7, 'quoref': 0.6, 'ropes
 #idealDevF1 = {'drop': 0.5689, 'newsqa': 0.4862534, 'squad2': 0.6825, 'quoref': 0.586261, 'ropes': 0.5875, 'narrativeqa': 0.4377, 'squad': 0.72442668, 'duorc': 0.3078575}
 IDEAL_EM = 0.47
 IDEAL_F1 = 0.56
-GAP_THRESHOLD = 0.02
+GAP_THRESHOLD = 0.03
 
 @DataIterator.register("dynamic")
 class DynamicIterator(BasicIterator):
