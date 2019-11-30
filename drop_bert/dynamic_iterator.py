@@ -230,6 +230,13 @@ class DynamicIterator(BasicIterator):
                 if scheduling == 'mixed_mixed' or (scheduling == 'mixed_unmixed' and step % self._batch_size == 0):
                     datasetIndex = np.random.choice(len(sample_probs), p=sample_probs)
                     datasetChosen = datasetNames[datasetIndex]
+                    ## Homogenize Squad Instances ##
+                    if datasetChosen in ('squad', 'squad2'):
+                        if np.random.rand() < 0.6:
+                            datasetChosen = 'squad2'
+                        else:
+                            datasetChosen = 'squad'
+                    ## Homogenize Squad Instances ##
                     
                 if step % 3000 == 0:
                     print('Step: ', step)
