@@ -108,7 +108,7 @@ class DynamicIterator(BasicIterator):
         self.epoch += 1
         
         if self.dynamic:
-            if cumulativeEM > 0.42 or cumulativeF1 > 0.5:
+            if cumulativeEM > 0.43 or cumulativeF1 > 0.52:
                 self._instances_per_epoch = int(self.maxSamples / 5)
             '''
             gap = max(0.001, IDEAL_EM - cumulativeEM) + max(0.001, IDEAL_F1 - cumulativeF1)
@@ -232,7 +232,7 @@ class DynamicIterator(BasicIterator):
                     datasetChosen = datasetNames[datasetIndex]
                     ## Homogenize Squad Instances ##
                     if datasetChosen in ('squad', 'squad2'):
-                        if np.random.rand() < 0.6:
+                        if np.random.rand() < 0.625:
                             datasetChosen = 'squad2'
                         else:
                             datasetChosen = 'squad'
