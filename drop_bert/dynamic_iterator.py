@@ -27,7 +27,7 @@ logger = logging.getLogger(__name__)
 TensorDict = Dict[str, Union[torch.Tensor, Dict[str, torch.Tensor]]]
 
 DATASETS = ('drop', 'duorc', 'narrativeqa', 'newsqa', 'quoref', 'ropes', 'squad', 'squad2')
-datasetSizes = {'drop': 77394, 'newsqa': 92543, 'squad2': 130310, 'quoref': 19392, 'ropes': 10924, 'narrativeqa': 32717, 'squad': 87596, 'duorc': 54746} # Approximate
+datasetSizes = {'drop': 77394, 'newsqa': 92543, 'squad2': 43494, 'quoref': 19392, 'ropes': 10924, 'narrativeqa': 32717, 'squad': 87596, 'duorc': 54746} # Approximate
 reducedSizes = {'drop': 69990, 'newsqa': 61658, 'squad2': 43494, 'quoref': 17600, 'ropes': 10565, 'narrativeqa': 24336, 'squad': 69005, 'duorc': 35315}
 devsetSizes = {'drop': 9530, 'duorc': 12224, 'narrativeqa': 3393, 'newsqa': 5154, 'quoref': 2407, 'ropes': 1688, 'squad': 10570, 'squad2': 11864}
 
