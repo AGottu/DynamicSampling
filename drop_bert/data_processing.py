@@ -309,6 +309,11 @@ class BertDropReader(DatasetReader):
             metadata['dynamic_metric'] = self.dynamic_metric
         
         if answer_annotations:
+            # Ananth #
+            if self.trainDev == 'train' and dataset == 'squad2':
+                return None
+            # Ananth #
+            
             for annotation in answer_annotations:
                 tokenized_spans = [[token.text for token in self.tokenizer.tokenize(answer)] for answer in annotation['spans']]
                 annotation['spans'] = [tokenlist_to_passage(token_list) for token_list in tokenized_spans]
