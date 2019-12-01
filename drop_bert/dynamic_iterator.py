@@ -28,8 +28,10 @@ TensorDict = Dict[str, Union[torch.Tensor, Dict[str, torch.Tensor]]]
 
 DATASETS = ('drop', 'duorc', 'narrativeqa', 'newsqa', 'quoref', 'ropes', 'squad', 'squad2')
 datasetSizes = {'drop': 77394, 'newsqa': 92543, 'squad2': 130310, 'quoref': 19392, 'ropes': 10924, 'narrativeqa': 32717, 'squad': 87596, 'duorc': 54746} # Approximate
-reducedSizes = {'drop': 69990, 'newsqa': 61658, 'squad2': 115168, 'quoref': 17600, 'ropes': 10565, 'narrativeqa': 24336, 'squad': 69005, 'duorc': 35315}
+reducedSizes = {'drop': 69990, 'newsqa': 61658, 'squad2': 43494, 'quoref': 17600, 'ropes': 10565, 'narrativeqa': 24336, 'squad': 69005, 'duorc': 35315}
 devsetSizes = {'drop': 9530, 'duorc': 12224, 'narrativeqa': 3393, 'newsqa': 5154, 'quoref': 2407, 'ropes': 1688, 'squad': 10570, 'squad2': 11864}
+
+# Regular Squad2 Sizes: 130310 and 115168
 
 idealDevLosses = {'drop': 1311375.6, 'newsqa': 3287434.3085, 'squad2': 850474.5231, 'quoref': 872099.2, 'ropes': 130333.73, 'narrativeqa': 2505894.0, 'squad': 1993947.91, 'duorc': 3664924.6}
 
@@ -108,7 +110,7 @@ class DynamicIterator(BasicIterator):
         self.epoch += 1
         
         if self.dynamic:
-            if cumulativeEM > 0.43 or cumulativeF1 > 0.52:
+            if cumulativeEM > 0.44 or cumulativeF1 > 0.52:
                 self._instances_per_epoch = int(self.maxSamples / 5)
             '''
             gap = max(0.001, IDEAL_EM - cumulativeEM) + max(0.001, IDEAL_F1 - cumulativeF1)
@@ -230,6 +232,7 @@ class DynamicIterator(BasicIterator):
                 if scheduling == 'mixed_mixed' or (scheduling == 'mixed_unmixed' and step % self._batch_size == 0):
                     datasetIndex = np.random.choice(len(sample_probs), p=sample_probs)
                     datasetChosen = datasetNames[datasetIndex]
+                    '''
                     ## Homogenize Squad Instances ##
                     if datasetChosen in ('squad', 'squad2'):
                         if np.random.rand() < 0.625:
@@ -237,6 +240,7 @@ class DynamicIterator(BasicIterator):
                         else:
                             datasetChosen = 'squad'
                     ## Homogenize Squad Instances ##
+                    '''
                     
                 if step % 3000 == 0:
                     print('Step: ', step)
