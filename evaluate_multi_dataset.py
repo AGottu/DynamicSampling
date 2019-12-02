@@ -16,7 +16,7 @@ if command == 'predict':
 else:
     input_file = '%s/data/all_datasets/dev' % os.getcwd()
 output_file = '%s/%s_%s.json' % (sys.argv[3], dataset, sys.argv[4])
-weights_file = '/agottumu/ropes/best.th' #'/agottumu/dynamic/model_state_epoch_12.th'
+weights_file = '/agottumu/weights_dynamic/model_state_epoch_45.th'
 
 # Assemble the command into sys.argv
 if command == 'predict':
@@ -41,8 +41,7 @@ else:
         "--output-file", output_file,
         "--cuda-device", 0,
         "--include-package", "drop_bert",
-        "-o", overrides#,
-        #"--weights-file", weights_file
+        "-o", overrides,
+        "--weights-file", weights_file
     ]
-if dataset == 'ropes':
-    main()
+main()
