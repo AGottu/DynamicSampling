@@ -41,7 +41,7 @@ else:
         "--output-file", output_file,
         "--cuda-device", 0,
         "--include-package", "drop_bert",
-        "-o", overrides,
-        "--weights-file", weights_file
+        "-o", overrides#,
+        #"--weights-file", weights_file
     ]
 main()
