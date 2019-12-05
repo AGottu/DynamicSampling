@@ -14,10 +14,8 @@ from pytorch_pretrained_bert import BertModel, BertTokenizer
 import pickle
 
 from drop_bert.nhelpers import tokenlist_to_passage, beam_search, evaluate_postfix
-from drop_bert.modeling import BertConfig, BERTModel
 
-PALS = False
-NO_ANSWER_THRESHOLD = 0.0#207.0
+#NO_ANSWER_THRESHOLD = 0.0#207.0
 logger = logging.getLogger(__name__)
 
 @Model.register("augmented_bert")
@@ -47,24 +45,7 @@ class NumericallyAugmentedBERT(Model):
             self.answering_abilities = answering_abilities
         self.number_rep = number_rep
 
-        if PALS:
-            pals_config = BertConfig.from_json_file('%s/configs/pals_config.json' % os.getcwd())
-            self.BERT = BERTModel(pals_config)
-            partial = torch.load('%s/bert/pytorch_model.bin' % os.getcwd(), map_location='cpu')
-            model_dict = self.BERT.state_dict()
-            update = {}
-            for n, p in model_dict.items():
-                if 'aug' in n or 'mult' in n:
-                    update[n] = p
-                    if 'pooler.mult' in n and 'bias' in n:
-                        update[n] = partial['pooler.dense.bias']
-                    if 'pooler.mult' in n and 'weight' in n:
-                        update[n] = partial['pooler.dense.weight']
-                else:
-                    update[n] = partial[n]
-            self.BERT.load_state_dict(update)
-        else:
-            self.BERT = BertModel.from_pretrained(bert_pretrained_model)
+        self.BERT = BertModel.from_pretrained(bert_pretrained_model)
         self.tokenizer = BertTokenizer.from_pretrained(bert_pretrained_model)
         bert_dim = self.BERT.pooler.dense.out_features
         
@@ -364,7 +345,8 @@ class NumericallyAugmentedBERT(Model):
                     # We did not consider multi-mention answers here
                     if predicted_ability_str == "passage_span_extraction":
                         answer_json["answer_type"] = "passage_span"
-
+                        
+                        '''
                         ###### Ananth ######
                         best_start_end = best_passage_span[i]
                         start_probs = passage_span_start_log_probs[i]
@@ -377,6 +359,7 @@ class NumericallyAugmentedBERT(Model):
                         else:
                             #assert impossible_answer[i] == 0
                         ###### Ananth ######
+                        '''
                             answer_json["value"], answer_json["spans"] = \
                                 self._span_prediction(question_passage_tokens[i], best_passage_span[i])
                     elif predicted_ability_str == "question_span_extraction":
