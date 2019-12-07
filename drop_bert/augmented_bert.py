@@ -15,7 +15,7 @@ import pickle
 
 from drop_bert.nhelpers import tokenlist_to_passage, beam_search, evaluate_postfix
 
-#NO_ANSWER_THRESHOLD = 0.0#207.0
+NO_ANSWER_THRESHOLD = 0.0#207.0
 logger = logging.getLogger(__name__)
 
 @Model.register("augmented_bert")
