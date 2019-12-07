@@ -66,6 +66,7 @@ class DynamicIterator(BasicIterator):
         super().__init__(batch_size, instances_per_epoch, max_instances_in_memory, cache_instances, track_epoch, maximum_samples_per_batch)
         self.train_iterators = None
         self.roundRobinIndex = 0
+        self.mrqaIndex = 0
         self.epoch = 0
         self.bestEM = 0.0
         self.bestF1 = 0.0
@@ -162,6 +163,8 @@ class DynamicIterator(BasicIterator):
         print('Sampling Method: ', sampling_method)
         print('Scheduling: ', scheduling)
         print('Metric: ', dynamic_metric)
+        if scheduling in ('mrqa', 'mrqa_cyclic'):
+            assert self._batch_size == len(DATASETS)
         #self.output_dir = '%s/experiments/%s-%s-%s.txt' % (ROOT_DIR, sampling_method, scheduling, dynamic_metric)
         self.output_dir = '%s/experiments2/%s-%s-%s.txt' % (ROOT_DIR, sampling_method, scheduling, dynamic_metric)
         
@@ -224,6 +227,7 @@ class DynamicIterator(BasicIterator):
         tot = sum(sample_probs)
         sample_probs = [p/tot for p in sample_probs]
         numCycles = len(DATASETS) if scheduling == 'rr' else 1
+        datasetsExhausted = [False for data in DATASETS]
         step = 0
         for i in range(numCycles):
             if scheduling == 'rr':
@@ -245,6 +249,13 @@ class DynamicIterator(BasicIterator):
                             datasetChosen = 'squad'
                     ## Homogenize Squad Instances ##
                     '''
+                elif scheduling in ('mrqa', 'mrqa_cyclic'):
+                    if scheduling == 'mrqa':
+                        if all(datasetsExhausted):
+                            break
+                        while datasetsExhausted[self.mrqaIndex]:
+                            self.mrqaIndex += 1
+                    datasetChosen = datasetNames[self.mrqaIndex]
                     
                 if step % 3000 == 0:
                     print('Step: ', step)
@@ -254,7 +265,11 @@ class DynamicIterator(BasicIterator):
                 assert inst is not None
                 assert isinstance(inst, Instance)
                 new_instances.append(inst)
+                if scheduling == 'mrqa' and datasetNumbers[datasetChosen] >= reducedSizes[datasetChosen]:
+                    datasetsExhausted[self.mrqaIndex] = True
                 step += 1
+                self.mrqaIndex += 1
+                self.mrqaIndex %= len(datasetNames)
             self.roundRobinIndex += 1
             self.roundRobinIndex %= len(datasetNames)
                 
