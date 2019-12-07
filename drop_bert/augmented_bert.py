@@ -346,7 +346,7 @@ class NumericallyAugmentedBERT(Model):
                     if predicted_ability_str == "passage_span_extraction":
                         answer_json["answer_type"] = "passage_span"
                         
-                        '''
+                        #'''
                         ###### Ananth ######
                         best_start_end = best_passage_span[i]
                         start_probs = passage_span_start_log_probs[i]
@@ -359,7 +359,7 @@ class NumericallyAugmentedBERT(Model):
                         else:
                             #assert impossible_answer[i] == 0
                         ###### Ananth ######
-                        '''
+                        #'''
                             answer_json["value"], answer_json["spans"] = \
                                 self._span_prediction(question_passage_tokens[i], best_passage_span[i])
                     elif predicted_ability_str == "question_span_extraction":
