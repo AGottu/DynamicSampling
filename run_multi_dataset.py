@@ -20,7 +20,7 @@ if dynamic:
     overrides_dict["trainer"]["type"] = 'dynamic-sample'
     if mrqa:
         overrides_dict["trainer"]["cuda_device"] = [0,1]
-        overrides_dict["iterator"]["batch_size"] = 8
+        overrides_dict["iterator"]["batch_size"] = 4 # Having batch size of 4 across 2 GPU's is effectively 8 instances for 1 gradient descent step
 overrides = json.dumps(overrides_dict)
 
 config_file = '%s/configs/nabert-plus-templated.json' % os.getcwd()
