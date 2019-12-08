@@ -164,7 +164,8 @@ class DynamicIterator(BasicIterator):
         print('Scheduling: ', scheduling)
         print('Metric: ', dynamic_metric)
         if scheduling in ('mrqa', 'mrqa_cyclic'):
-            assert self._batch_size == len(DATASETS)
+            pass
+            #assert self._batch_size == len(DATASETS)
         #self.output_dir = '%s/experiments/%s-%s-%s.txt' % (ROOT_DIR, sampling_method, scheduling, dynamic_metric)
         self.output_dir = '%s/experiments2/%s-%s-%s.txt' % (ROOT_DIR, sampling_method, scheduling, dynamic_metric)
         
